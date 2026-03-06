@@ -1,37 +1,46 @@
 # SISELO
 
-Sistema de informação desenvolvido para apoiar a integração entre o Centro de Atenção ao Diabetes e Hipertensão (CADH) e as Unidades Básicas de Saúde (UBS).
+**SISELO (Sistema Integrado de Saúde)** é um sistema web desenvolvido para apoiar a integração entre o **Centro de Atenção ao Diabetes e Hipertensão (CADH)** e as **Unidades Básicas de Saúde (UBS)**.
 
-A plataforma centraliza informações clínicas e administrativas relacionadas ao acompanhamento de pacientes, permitindo que diferentes unidades de saúde compartilhem dados e acompanhem o cuidado de forma contínua.
+A plataforma tem como finalidade centralizar informações assistenciais e facilitar o acompanhamento do cuidado ao paciente entre diferentes unidades de saúde.
+
+---
 
 ## Objetivo
 
-Promover a integração entre CADH e UBS por meio de um sistema web que permita registrar, consultar e acompanhar informações assistenciais de forma estruturada e segura.
+Unificar o registro e a consulta de informações relacionadas ao acompanhamento de pacientes, promovendo melhor comunicação e continuidade do cuidado entre CADH e UBS.
 
-## Funcionalidades principais
+---
 
-- cadastro e acompanhamento de pacientes
-- gestão de planos de cuidado
-- registro de atendimentos
-- controle de transições entre serviços
-- administração de usuários
-- rastreabilidade das ações realizadas no sistema
+## Funcionalidades
+
+- cadastro e acompanhamento de pacientes  
+- gestão de planos de cuidado  
+- registro de atendimentos  
+- controle de transições do cuidado  
+- administração de usuários  
+- registro e auditoria das ações realizadas no sistema  
+
+---
 
 ## Tecnologias
 
-- PHP
-- MySQL
-- Bootstrap
-- PDO para acesso ao banco de dados
+- PHP  
+- MySQL  
+- Bootstrap  
 
-## Estrutura da documentação
+---
 
-docs/ → documentação técnica do sistema  
-modulos/ → descrição das funcionalidades  
-diagramas/ → representações visuais do sistema
+## Estrutura do repositório
 
-## Segurança
+docs/ documentação técnica do sistema
+modulos/ descrição das funcionalidades e módulos
+diagramas/ fluxos e representações da arquitetura do sistema
 
-O sistema possui mecanismos de controle de acesso por perfil de usuário e registro de ações realizadas na plataforma.
+---
 
-Este repositório não contém dados reais de pacientes ou informações sensíveis.
+## Desenvolvimento
+
+Este repositório é destinado à documentação e organização técnica do sistema SISELO.
+
+Informações sensíveis, dados reais de pacientes ou credenciais de acesso não devem ser incluídos no repositório.
