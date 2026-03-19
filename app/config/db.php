@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 return [
-  'host' => '127.0.0.1',
-  'db'   => 'intranet_cadh',
-  'user' => 'root',
-  'pass' => '',
+  'host' => getenv('DB_HOST') ?: '127.0.0.1',
+  'db'   => getenv('DB_NAME') ?: 'intranet_cadh',
+  'user' => getenv('DB_USER') ?: 'root',
+  'pass' => getenv('DB_PASSWORD') ?: '',
   'charset' => 'utf8mb4',
 ];
