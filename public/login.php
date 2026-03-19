@@ -16,9 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     session_regenerate_id(true);
     $_SESSION['user_id'] = (int)$user['id'];
 
-	if ((int)$user['must_change_password'] === 1) {
- 	 redirect('/account/change_password.php');
-	}
+  if ((int)$user['must_change_password'] === 1) {
+    redirect('/change_password.php');
+  }
 
     require __DIR__ . '/../app/services/Audit.php';
     Audit::log($pdo, (int)$user['id'], 'login', 'users', (int)$user['id'], null, ['email' => $email]);

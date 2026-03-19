@@ -1,5 +1,31 @@
 USE intranet_cadh;
 
+SET @has_must_change_password := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'users'
+    AND COLUMN_NAME = 'must_change_password'
+);
+
+SET @sql_add_must_change_password := IF(
+  @has_must_change_password = 0,
+  'ALTER TABLE users ADD COLUMN must_change_password TINYINT(1) NOT NULL DEFAULT 0',
+  'SELECT 1'
+);
+
+PREPARE stmt_add_must_change_password FROM @sql_add_must_change_password;
+EXECUTE stmt_add_must_change_password;
+DEALLOCATE PREPARE stmt_add_must_change_password;
+
+UPDATE users
+SET
+  password_hash = '$2y$10$hmCr8lV/O.MLFyFJSpmyiOmM6xUVpzIHSy5kPTQOOhmQGQhexVOV2',
+  is_active = 1,
+  must_change_password = 1
+WHERE email = 'admin@local'
+  AND password_hash = '<COLE_O_HASH_AQUI>';
+
 CREATE TABLE IF NOT EXISTS encounters (
   id INT AUTO_INCREMENT PRIMARY KEY,
   patient_id INT NOT NULL,

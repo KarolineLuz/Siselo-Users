@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-require __DIR__ . '/../../app/core/bootstrap.php';
-require __DIR__ . '/../../app/middleware/auth.php';
-require __DIR__ . '/../../app/services/Audit.php';
+require __DIR__ . '/../app/core/bootstrap.php';
+require __DIR__ . '/../app/middleware/auth.php';
+require __DIR__ . '/../app/services/Audit.php';
 
 require_auth();
 
