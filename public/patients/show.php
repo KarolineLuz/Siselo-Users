@@ -173,7 +173,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
 
   <hr>
   <p>
-    <a href="/patients/list.php">Voltar</a> |
+    <a href="/encounters/list.php">Voltar</a> |
     <a href="/index.php">Home</a>
   </p>
   <?php require __DIR__ . '/../../app/views/layout/footer.php'; ?>
