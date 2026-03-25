@@ -1,0 +1,47 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: intranet_cadh
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database.sql:/docker-entrypoint-initdb.d/01-database.sql:ro
+      - ./database_patch_003.sql:/docker-entrypoint-initdb.d/03-database_patch_003.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  db-migrate:
+    image: mysql:8.0
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./database_patch_003.sql:/migrations/database_patch_003.sql:ro
+    entrypoint:
+      - sh
+      - -c
+      - mysql -h db -uroot -prootpassword intranet_cadh < /migrations/database_patch_003.sql
+
+  users:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8086:80"
+    depends_on:
+      db:
+        condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_NAME: intranet_cadh
+
+volumes:
+  db_data:

@@ -13,6 +13,7 @@ CREATE TABLE users (
   email VARCHAR(190) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
+  must_change_password TINYINT(1) NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NULL,
   deleted_at DATETIME NULL
@@ -81,6 +82,13 @@ CREATE TABLE patients (
   responsible_name VARCHAR(180) NULL,
   phone VARCHAR(40) NULL,
   address VARCHAR(255) NULL,
+  email VARCHAR(190) NULL,
+  emergency_contact VARCHAR(190) NULL,
+  health_insurance VARCHAR(160) NULL,
+  blood_type VARCHAR(5) NULL,
+  allergies TEXT NULL,
+  chronic_conditions TEXT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'ativo',
   ubs_ref VARCHAR(120) NULL,
   team_ref VARCHAR(120) NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -121,8 +129,8 @@ SELECT r.id, p.id FROM roles r
 JOIN permissions p ON p.name IN ('patients.view')
 WHERE r.name='visualizador';
 
-INSERT INTO users (name, email, password_hash) VALUES
-('Administrador', 'admin@local', '<COLE_O_HASH_AQUI>');
+INSERT INTO users (name, email, password_hash, is_active, must_change_password) VALUES
+('Administrador', 'admin@local', '$2y$10$hmCr8lV/O.MLFyFJSpmyiOmM6xUVpzIHSy5kPTQOOhmQGQhexVOV2', 1, 1);
 
 INSERT INTO user_roles (user_id, role_id)
 SELECT u.id, r.id
