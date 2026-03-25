@@ -8,7 +8,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./database.sql:/docker-entrypoint-initdb.d/01-database.sql:ro
-      - ./database_patch_003.sql.sql:/docker-entrypoint-initdb.d/03-database_patch_003.sql:ro
+      - ./database_patch_003.sql:/docker-entrypoint-initdb.d/03-database_patch_003.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
@@ -21,7 +21,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./database_patch_003.sql.sql:/migrations/database_patch_003.sql:ro
+      - ./database_patch_003.sql:/migrations/database_patch_003.sql:ro
     entrypoint:
       - sh
       - -c
