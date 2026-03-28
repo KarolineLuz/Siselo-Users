@@ -18,8 +18,13 @@ $sql = "
 ";
 $params = [];
 if ($q !== '') {
-  $sql .= " AND (p.full_name LIKE :q OR p.cpf LIKE :q OR p.ses LIKE :q OR t.status LIKE :q OR t.to_service LIKE :q OR t.from_service LIKE :q)";
-  $params[':q'] = "%{$q}%";
+  $sql .= " AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.ses LIKE :q_ses OR t.status LIKE :q_status OR t.to_service LIKE :q_to_service OR t.from_service LIKE :q_from_service)";
+  $params[':q_full_name'] = "%{$q}%";
+  $params[':q_cpf'] = "%{$q}%";
+  $params[':q_ses'] = "%{$q}%";
+  $params[':q_status'] = "%{$q}%";
+  $params[':q_to_service'] = "%{$q}%";
+  $params[':q_from_service'] = "%{$q}%";
 }
 $sql .= " ORDER BY t.deleted_at DESC LIMIT 300";
 

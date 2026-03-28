@@ -13,8 +13,9 @@ $q = trim((string)($_GET['q'] ?? ''));
 $sql = "SELECT u.* FROM users u WHERE u.deleted_at IS NULL";
 $params = [];
 if ($q !== '') {
-  $sql .= " AND (u.name LIKE :q OR u.email LIKE :q)";
-  $params[':q'] = "%{$q}%";
+  $sql .= " AND (u.name LIKE :q_name OR u.email LIKE :q_email)";
+  $params[':q_name'] = "%{$q}%";
+  $params[':q_email'] = "%{$q}%";
 }
 $sql .= " ORDER BY u.id DESC LIMIT 300";
 

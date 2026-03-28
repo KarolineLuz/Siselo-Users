@@ -13,8 +13,10 @@ $q = trim((string)($_GET['q'] ?? ''));
 $sql = "SELECT * FROM patients WHERE deleted_at IS NOT NULL";
 $params = [];
 if ($q !== '') {
-  $sql .= " AND (full_name LIKE :q OR cpf LIKE :q OR ses LIKE :q)";
-  $params[':q'] = "%{$q}%";
+  $sql .= " AND (full_name LIKE :q_full_name OR cpf LIKE :q_cpf OR ses LIKE :q_ses)";
+  $params[':q_full_name'] = "%{$q}%";
+  $params[':q_cpf'] = "%{$q}%";
+  $params[':q_ses'] = "%{$q}%";
 }
 $sql .= " ORDER BY deleted_at DESC LIMIT 300";
 

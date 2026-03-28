@@ -18,8 +18,10 @@ $sql = "
 ";
 $params = [];
 if ($q !== '') {
-  $sql .= " AND (p.full_name LIKE :q OR p.cpf LIKE :q OR p.ses LIKE :q)";
-  $params[':q'] = "%{$q}%";
+  $sql .= " AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.ses LIKE :q_ses)";
+  $params[':q_full_name'] = "%{$q}%";
+  $params[':q_cpf'] = "%{$q}%";
+  $params[':q_ses'] = "%{$q}%";
 }
 $sql .= " ORDER BY cp.id DESC LIMIT 200";
 
