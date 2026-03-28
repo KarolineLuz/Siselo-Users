@@ -172,10 +172,13 @@ require __DIR__ . '/../../app/views/layout/header.php';
   <?php endif; ?>
 
   <hr>
-  <p>
-    <a href="/transitions/list.php">Voltar</a> |
+ <p>
+    <?php 
+        $url_anterior = $_SERVER['HTTP_REFERER'] ?? '/index.php'; 
+    ?>
+    <a href="<?= $url_anterior ?>">Voltar</a> |
     <a href="/index.php">Home</a>
-  </p>
+</p>
   <?php require __DIR__ . '/../../app/views/layout/footer.php'; ?>
 </body>
 </html>
