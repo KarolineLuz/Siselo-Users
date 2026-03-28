@@ -70,17 +70,17 @@ $genderLabel = $genderLabels[strtolower((string)($patient['sex'] ?? ''))] ?? '';
 $statusLabel = ((string)($patient['status'] ?? 'ativo') === 'ativo') ? 'Ativo' : 'Inativo';
 ?>
 <?php
-$pageTitle = 'Paciente 360';
+$pageTitle = 'Usuário 360';
 require __DIR__ . '/../../app/views/layout/header.php';
 ?>
 <!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Paciente 360</title>
+  <title>Usuário 360</title>
 </head>
 <body>
-  <h1>Paciente 360</h1>
+  <h1>Usuário 360</h1>
 
   <p>
     <b><?= h($patient['full_name']) ?></b><br>
@@ -172,10 +172,13 @@ require __DIR__ . '/../../app/views/layout/header.php';
   <?php endif; ?>
 
   <hr>
-  <p>
-    <a href="/encounters/list.php">Voltar</a> |
+ <p>
+    <?php 
+        $url_anterior = $_SERVER['HTTP_REFERER'] ?? '/index.php'; 
+    ?>
+    <a href="<?= $url_anterior ?>">Voltar</a> |
     <a href="/index.php">Home</a>
-  </p>
+</p>
   <?php require __DIR__ . '/../../app/views/layout/footer.php'; ?>
 </body>
 </html>

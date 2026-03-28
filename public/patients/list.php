@@ -44,13 +44,13 @@ $stmt->execute($params);
 $rows = $stmt->fetchAll();
 ?>
 <?php
-$pageTitle = 'Pacientes';
+$pageTitle = 'Usuários';
 require __DIR__ . '/../../app/views/layout/header.php';
 ?>
 <html>
 <head><meta charset="utf-8"><title>Pacientes</title></head>
 <body>
-  <h1>Pacientes</h1>
+  <h1>Usuários</h1>
 
   <form method="get">
     <input name="q" value="<?= h($q) ?>" placeholder="Buscar por nome/CPF/SES/telefone/email">
@@ -59,7 +59,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
 
   <p>
     <?php if (can($pdo, 'patients.create')): ?>
-      <a href="/patients/form.php">+ Novo paciente</a>
+      <a href="/patients/form.php">+ Novo Usuário</a>
     <?php endif; ?>
     <?php if (can($pdo, 'patients.restore')): ?>
       | <a href="/patients/trash.php">Lixeira</a>
@@ -69,7 +69,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
 
   <table border="1" cellpadding="6">
     <tr>
-      <th>Paciente</th>
+      <th>Usuário</th>
       <th>CPF</th>
       <th>SES</th>
       <th>Contato</th>
@@ -102,7 +102,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
         <td><?= h($r['blood_type'] ?? '') ?></td>
         <td><?= h($statusLabel) ?></td>
         <td>
-          <a href="/patients/show.php?id=<?= (int)$r['id'] ?>">Ver</a>
+          <a href="/patients/show.php?id=<?= (int)$r['id'] ?>">Usuário 360</a>
           <?php if (can($pdo, 'patients.update')): ?>
             <a href="/patients/form.php?id=<?= (int)$r['id'] ?>">Editar</a>
           <?php endif; ?>
