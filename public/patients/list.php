@@ -33,8 +33,13 @@ $sql = 'SELECT * FROM patients WHERE deleted_at IS NULL';
 $params = [];
 
 if ($q !== '') {
-  $sql .= ' AND (full_name LIKE :q OR cpf LIKE :q OR ses LIKE :q OR phone LIKE :q OR email LIKE :q)';
-  $params[':q'] = "%{$q}%";
+  $sql .= ' AND (full_name LIKE :q_name OR cpf LIKE :q_cpf OR ses LIKE :q_ses OR phone LIKE :q_phone OR email LIKE :q_email)';
+  $searchTerm = "%{$q}%";
+  $params['q_name'] = $searchTerm;
+  $params['q_cpf'] = $searchTerm;
+  $params['q_ses'] = $searchTerm;
+  $params['q_phone'] = $searchTerm;
+  $params['q_email'] = $searchTerm;
 }
 
 $sql .= ' ORDER BY full_name ASC LIMIT 200';
