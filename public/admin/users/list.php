@@ -36,7 +36,7 @@ function roles_for(PDO $pdo, int $userId): string {
 }
 ?>
 <?php
-$pageTitle = 'Pacientes';
+$pageTitle = 'Usuários';
 require __DIR__ . '/../../../app/views/layout/header.php';
 ?>
 <!doctype html>

@@ -53,7 +53,7 @@ $pageTitle = 'Usuários';
 require __DIR__ . '/../../app/views/layout/header.php';
 ?>
 <html>
-<head><meta charset="utf-8"><title>Pacientes</title></head>
+<head><meta charset="utf-8"><title>Usuários</title></head>
 <body>
   <h1>Usuários</h1>
 

@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $summary = trim((string)($_POST['summary'] ?? ''));
 
   if ($patientId <= 0 || $date === '' || $specialty === '') {
-    $error = "Paciente, data e especialidade são obrigatórios.";
+    $error = "Usuário, data e especialidade são obrigatórios.";
   } else {
     if ($editing) {
       $before = $row;
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <?php
-$pageTitle = 'Pacientes';
+$pageTitle = 'Usuários';
 require __DIR__ . '/../../app/views/layout/header.php';
 ?>
 <!doctype html>
@@ -99,7 +99,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
   <form method="post">
     <?= csrf_field() ?>
 
-    <label>Paciente *</label><br>
+    <label>Usuário*</label><br>
     <select name="patient_id" required>
       <option value="">-- selecione --</option>
       <?php foreach ($patients as $p): ?>

@@ -17,7 +17,7 @@ require __DIR__ . '/../app/views/layout/header.php';
   <h1>SISElo - UBS-CADH</h1>
 
   <p>
-    <a href="/patients/list.php">Pacientes</a>
+    <a href="/patients/list.php">Usuários</a>
     <?php if (can($pdo, 'admin.manage')): ?>
       | <a href="/admin/users/list.php">Admin: Usuários</a>
     <?php endif; ?>

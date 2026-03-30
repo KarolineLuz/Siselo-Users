@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $sort_order = (array)($_POST['sort_order'] ?? []);
 
   if ($patientId <= 0 || $startDate === '') {
-    $error = "Paciente e data de início são obrigatórios.";
+    $error = "Usuário e data de início são obrigatórios.";
   } else {
     $pdo->beginTransaction();
     try {
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <?php
-$pageTitle = 'Pacientes';
+$pageTitle = 'Usuários';
 require __DIR__ . '/../../app/views/layout/header.php';
 ?>
 <!doctype html>
@@ -131,7 +131,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
   <form method="post">
     <?= csrf_field() ?>
 
-    <label>Paciente *</label><br>
+    <label>Usuários *</label><br>
     <select name="patient_id" required>
       <option value="">-- selecione --</option>
       <?php foreach ($patients as $p): ?>

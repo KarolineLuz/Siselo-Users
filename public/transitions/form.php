@@ -107,7 +107,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
   <form method="post">
     <?= csrf_field() ?>
 
-    <label>Paciente *</label><br>
+    <label>Usuário *</label><br>
     <select name="patient_id" required>
       <option value="">-- selecione --</option>
       <?php foreach ($patients as $p): ?>

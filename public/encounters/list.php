@@ -31,7 +31,7 @@ $st->execute($params);
 $rows = $st->fetchAll();
 ?>
 <?php
-$pageTitle = 'Pacientes';
+$pageTitle = 'Usuários';
 require __DIR__ . '/../../app/views/layout/header.php';
 ?>
 <!doctype html>
@@ -41,7 +41,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
   <h1>Atendimentos</h1>
 
   <form method="get">
-    <input name="q" value="<?= h($q) ?>" placeholder="Buscar paciente/CPF/SES/especialidade">
+    <input name="q" value="<?= h($q) ?>" placeholder="Buscar Usuário/CPF/SES/especialidade">
     <button type="submit">Buscar</button>
   </form>
 
@@ -57,7 +57,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
 
   <table border="1" cellpadding="6">
     <tr>
-      <th>Data</th><th>Paciente</th><th>Especialidade</th><th>Resumo</th><th>Ações</th>
+      <th>Data</th><th>Usuário</th><th>Especialidade</th><th>Resumo</th><th>Ações</th>
     </tr>
     <?php foreach ($rows as $r): ?>
       <tr>
@@ -69,7 +69,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
         <td><?= h($r['specialty']) ?></td>
         <td><?= h($r['summary']) ?></td>
         <td>
-          <a href="/patients/show.php?id=<?= (int)$r['patient_id'] ?>&tab=atendimentos">Paciente 360</a>
+          <a href="/patients/show.php?id=<?= (int)$r['patient_id'] ?>&tab=atendimentos">Usuário 360</a>
           <?php if (can($pdo, 'encounters.update')): ?>
             | <a href="/encounters/form.php?id=<?= (int)$r['id'] ?>">Editar</a>
           <?php endif; ?>

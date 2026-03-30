@@ -40,7 +40,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
   <h1>Planos de Cuidado</h1>
 
   <form method="get">
-    <input name="q" value="<?= h($q) ?>" placeholder="Buscar paciente (nome/CPF/SES)">
+    <input name="q" value="<?= h($q) ?>" placeholder="Buscar Usuário (nome/CPF/SES)">
     <button type="submit">Buscar</button>
   </form>
 
@@ -58,6 +58,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
     <tr>
       <th>ID</th><th>Paciente</th><th>Início</th><th>Fim</th><th>Ações</th>
     </tr>
+    
     <?php foreach ($rows as $r): ?>
       <tr>
         <td><?= (int)$r['id'] ?></td>

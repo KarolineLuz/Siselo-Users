@@ -34,7 +34,7 @@ $rows = $st->fetchAll();
 ?>
 
 <?php
-$pageTitle = 'Pacientes';
+$pageTitle = 'Usuários';
 require __DIR__ . '/../../app/views/layout/header.php';
 ?>
 <!doctype html>
@@ -60,7 +60,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
 
   <table border="1" cellpadding="6">
     <tr>
-      <th>Data</th><th>Paciente</th><th>De</th><th>Para</th><th>Status</th><th>Ações</th>
+      <th>Data</th><th>Usuário</th><th>De</th><th>Para</th><th>Status</th><th>Ações</th>
     </tr>
     <?php foreach ($rows as $r): ?>
       <tr>

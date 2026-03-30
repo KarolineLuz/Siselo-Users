@@ -43,7 +43,7 @@ declare(strict_types=1);
     <?php endif; ?>
 
     <?php if (can($pdo, 'careplans.view')): ?>
-      <a href="/care_plans/list.php">Planos</a>
+      <a href="/care_plans/list.php">Usuários</a>
     <?php endif; ?>
 
     <?php if (can($pdo, 'encounters.view')): ?>

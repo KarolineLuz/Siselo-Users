@@ -51,7 +51,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
 
   <table border="1" cellpadding="6">
     <tr>
-      <th>ID</th><th>Paciente</th><th>Início</th><th>Fim</th><th>Apagado em</th><th>Ações</th>
+      <th>ID</th><th>Usuário</th><th>Início</th><th>Fim</th><th>Apagado em</th><th>Ações</th>
     </tr>
     <?php foreach ($rows as $r): ?>
       <tr>
