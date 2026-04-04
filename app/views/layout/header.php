@@ -37,6 +37,8 @@ declare(strict_types=1);
 
   <div class="menu">
     <a href="/index.php">Home</a>
+    <a href="/cadh/index.php">CADH</a>
+    <a href="#">UBS</a>
 
     <?php if (can($pdo, 'patients.view')): ?>
       <a href="/patients/list.php">Pacientes</a>

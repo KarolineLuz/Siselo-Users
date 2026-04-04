@@ -9,6 +9,7 @@ require_auth();
 require_permission($pdo, 'careplans.view');
 
 $q = trim((string)($_GET['q'] ?? ''));
+$patientId = isset($_GET['patient_id']) ? (int)$_GET['patient_id'] : null;
 
 $sql = "
   SELECT cp.*, p.full_name
@@ -16,7 +17,30 @@ $sql = "
   JOIN patients p ON p.id = cp.patient_id
   WHERE cp.deleted_at IS NULL AND p.deleted_at IS NULL
 ";
+
 $params = [];
+
+if ($patientId !== null) {
+  $sql .= " AND cp.patient_id = :patient_id";
+  $params[':patient_id'] = $patientId;
+}
+
+if ($patientId !== null) {
+    $stCheck = $pdo->prepare("
+        SELECT id FROM care_plans 
+        WHERE patient_id = :id 
+        AND deleted_at IS NULL 
+        LIMIT 1
+    ");
+    $stCheck->execute([':id' => $patientId]);
+
+    $temPlano = $stCheck->fetch();
+
+    if (!$temPlano) {
+        header("Location: /care_plans/form.php?patient_id=" . $patientId);
+        exit;
+    }
+}
 if ($q !== '') {
   $sql .= " AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.ses LIKE :q_ses)";
   $params[':q_full_name'] = "%{$q}%";
