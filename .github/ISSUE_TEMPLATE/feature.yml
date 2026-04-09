@@ -1,0 +1,82 @@
+name: Feature SISELO
+title: "feat: "
+description: Documentar nova funcionalidade do sistema
+labels: ["feature"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        🤗 Obrigado por contribuir! Preencha os campos abaixo para documentar a funcionalidade no SISELO.
+
+  - type: textarea
+    id: user-story
+    attributes:
+      label: 🧩 História de Usuário
+      description: Descreva no formato de história de usuário.
+      placeholder: Como [tipo de usuário], quero [objetivo], para [benefício].
+    validations:
+      required: true
+
+  - type: textarea
+    id: descricao-funcionalidade
+    attributes:
+      label: 📌 Descrição da funcionalidade
+      description: Explique de forma objetiva o que será desenvolvido.
+      placeholder: Ex.: Implementar visualização unificada de dados clínicos vindos de dois sistemas distintos.
+    validations:
+      required: true
+
+  - type: textarea
+    id: contexto
+    attributes:
+      label: 🏥 Contexto
+      description: Informe qual problema do sistema ou necessidade do projeto essa funcionalidade resolve.
+      placeholder: Ex.: Atualmente os dados do paciente estão espalhados em sistemas diferentes, dificultando o acesso rápido ao prontuário.
+    validations:
+      required: true
+
+  - type: textarea
+    id: criterios-aceitacao
+    attributes:
+      label: ✅ Critérios de aceitação
+      description: Liste os critérios que definem quando a funcionalidade será considerada correta.
+      placeholder: |
+        - [ ] O usuário consegue acessar os dados do paciente em uma única tela
+        - [ ] Os dados integrados são exibidos corretamente
+        - [ ] O sistema informa caso não encontre dados
+    validations:
+      required: true
+
+  - type: textarea
+    id: dor
+    attributes:
+      label: 🟡 DoR (Definition of Ready)
+      description: Checklist para verificar se a issue está pronta para desenvolvimento.
+      placeholder: |
+        - [ ] Escopo da funcionalidade está claro
+        - [ ] Critérios de aceitação foram definidos
+        - [ ] Dependências e riscos foram identificados
+        - [ ] Regra de negócio foi entendida pelo time
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: dod
+    attributes:
+      label: 🟢 DoD (Definition of Done)
+      description: Marque os critérios que definem a entrega como concluída.
+      options:
+        - label: A funcionalidade foi implementada
+        - label: O código foi revisado
+        - label: A funcionalidade foi testada
+        - label: Nenhuma funcionalidade existente foi quebrada
+        - label: A documentação foi atualizada, se necessário
+
+  - type: textarea
+    id: observacoes
+    attributes:
+      label: 📎 Observações adicionais
+      description: Adicione dependências, restrições técnicas ou informações complementares.
+    validations:
+      required: false
