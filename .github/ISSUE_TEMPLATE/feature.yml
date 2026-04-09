@@ -1,6 +1,6 @@
 name: Feature SISELO
 title: "feat: "
-description: Documentar nova funcionalidade do sistema
+description: "Documentar nova funcionalidade do sistema"
 labels: ["feature"]
 assignees: []
 body:
@@ -12,71 +12,60 @@ body:
   - type: textarea
     id: user-story
     attributes:
-      label: 🧩 História de Usuário
-      description: Descreva no formato de história de usuário.
-      placeholder: Como [tipo de usuário], quero [objetivo], para [benefício].
+      label: "🧩 História de Usuário"
+      description: "Descreva no formato de história de usuário."
+      placeholder: "Como [usuário], quero [objetivo], para [benefício]."
     validations:
       required: true
 
   - type: textarea
     id: descricao-funcionalidade
     attributes:
-      label: 📌 Descrição da funcionalidade
-      description: Explique de forma objetiva o que será desenvolvido.
-      placeholder: Ex.: Implementar visualização unificada de dados clínicos vindos de dois sistemas distintos.
+      label: "📌 Descrição da funcionalidade"
+      description: "Explique o que será desenvolvido."
+      placeholder: "Ex.: Integração de dados clínicos entre sistemas."
     validations:
       required: true
 
   - type: textarea
     id: contexto
     attributes:
-      label: 🏥 Contexto
-      description: Informe qual problema do sistema ou necessidade do projeto essa funcionalidade resolve.
-      placeholder: Ex.: Atualmente os dados do paciente estão espalhados em sistemas diferentes, dificultando o acesso rápido ao prontuário.
+      label: "🏥 Contexto"
+      description: "Qual problema isso resolve?"
+      placeholder: "Dados estão separados em sistemas diferentes."
     validations:
       required: true
 
   - type: textarea
     id: criterios-aceitacao
     attributes:
-      label: ✅ Critérios de aceitação
-      description: Liste os critérios que definem quando a funcionalidade será considerada correta.
+      label: "✅ Critérios de aceitação"
+      description: "Liste critérios de validação."
       placeholder: |
-        - [ ] O usuário consegue acessar os dados do paciente em uma única tela
-        - [ ] Os dados integrados são exibidos corretamente
-        - [ ] O sistema informa caso não encontre dados
+        - [ ] Dados exibidos corretamente
+        - [ ] Integração funcionando
     validations:
       required: true
 
   - type: textarea
     id: dor
     attributes:
-      label: 🟡 DoR (Definition of Ready)
-      description: Checklist para verificar se a issue está pronta para desenvolvimento.
+      label: "🟡 DoR (Ready)"
+      description: "Checklist para iniciar desenvolvimento."
       placeholder: |
-        - [ ] Escopo da funcionalidade está claro
-        - [ ] Critérios de aceitação foram definidos
-        - [ ] Dependências e riscos foram identificados
-        - [ ] Regra de negócio foi entendida pelo time
+        - [ ] Escopo claro
+        - [ ] Critérios definidos
+        - [ ] Dependências identificadas
     validations:
       required: true
 
   - type: checkboxes
     id: dod
     attributes:
-      label: 🟢 DoD (Definition of Done)
-      description: Marque os critérios que definem a entrega como concluída.
+      label: "🟢 DoD (Done)"
+      description: "Critérios de conclusão."
       options:
-        - label: A funcionalidade foi implementada
-        - label: O código foi revisado
-        - label: A funcionalidade foi testada
-        - label: Nenhuma funcionalidade existente foi quebrada
-        - label: A documentação foi atualizada, se necessário
-
-  - type: textarea
-    id: observacoes
-    attributes:
-      label: 📎 Observações adicionais
-      description: Adicione dependências, restrições técnicas ou informações complementares.
-    validations:
-      required: false
+        - label: "Funcionalidade implementada"
+        - label: "Código revisado"
+        - label: "Testes realizados"
+        - label: "Sem regressões"
