@@ -42,6 +42,7 @@ services:
       DB_USER: root
       DB_PASSWORD: rootpassword
       DB_NAME: intranet_cadh
+      FRONTEND_ORIGIN: http://localhost:3000
 
 volumes:
   db_data:
