@@ -4,7 +4,7 @@
 
 O **SISELO (Sistema Integrado de Saúde)** é um sistema web desenvolvido para apoiar a integração entre o **Centro de Atenção ao Diabetes e Hipertensão (CADH)** e as **Unidades Básicas de Saúde (UBS)**.
 
-A camada de **backend** e **banco de dados** é responsável pelo processamento das regras de negócio do sistema, gerenciamento das informações assistenciais e controle de acesso dos usuários.
+A camada de **backend** e **banco de dados** é responsável pelo processamento das regras de negócio do sistema, gerenciamento das informações assistenciais, controle de acesso dos usuários e disponibilização das APIs consumidas pelo frontend.
 
 Essa camada garante a integridade, consistência e segurança dos dados utilizados no acompanhamento de pacientes entre as unidades de saúde.
 
@@ -25,6 +25,7 @@ A camada de backend é responsável por:
 - validação de dados recebidos  
 - gerenciamento de autenticação e autorização de usuários  
 - comunicação com o banco de dados  
+- disponibilização dos endpoints da API em `/api`
 - registro de logs e auditoria das ações realizadas no sistema  
 
 ---
@@ -61,9 +62,29 @@ O banco de dados garante consistência, organização e recuperação eficiente 
 
 ## Tecnologias Utilizadas
 
-- **PHP** — implementação da lógica de negócio do sistema  
+- **PHP** — implementação da lógica de negócio e das APIs do sistema
 - **MySQL** — gerenciamento e armazenamento dos dados  
-- **Bootstrap** — integração com a interface da aplicação  
+- **Apache** — servidor HTTP utilizado no ambiente Docker
+
+---
+
+## Separação com o Frontend
+
+O frontend oficial do sistema fica no repositório separado **Siselo-Frontend**.
+
+Neste repositório, o backend mantém as rotas de API em:
+
+```text
+/api
+```
+
+As telas PHP antigas foram mantidas apenas como legado, mas as rotas públicas de interface redirecionam para o frontend separado.
+
+A origem do frontend é configurada pela variável de ambiente:
+
+```text
+FRONTEND_ORIGIN=http://localhost:3000
+```
 
 ---
 

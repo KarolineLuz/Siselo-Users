@@ -1,0 +1,47 @@
+RewriteEngine On
+
+# A API continua sendo atendida pelo Siselo-Users.
+RewriteRule ^api/ - [L]
+
+# Mantem logout como acao do backend para limpar a sessao antes de voltar ao frontend.
+RewriteRule ^logout\.php$ - [L]
+
+# O PDF agora fica no namespace de API do backend.
+RewriteRule ^care_plans/pdf\.php$ /api/care_plans/pdf.php [R=302,L]
+
+# Rotas antigas de telas PHP redirecionam para o frontend separado.
+RewriteRule ^$ %{ENV:FRONTEND_ORIGIN}/index.html [R=302,L,NE]
+RewriteRule ^index\.php$ %{ENV:FRONTEND_ORIGIN}/index.html [R=302,L,NE]
+RewriteRule ^login\.php$ %{ENV:FRONTEND_ORIGIN}/login.html [R=302,L,NE]
+RewriteRule ^change_password\.php$ %{ENV:FRONTEND_ORIGIN}/change_password.html [R=302,L,NE]
+
+RewriteRule ^cadh/index\.php$ %{ENV:FRONTEND_ORIGIN}/cadh/index.html [R=302,L,NE]
+
+RewriteRule ^patients/list\.php$ %{ENV:FRONTEND_ORIGIN}/patients/list.html [R=302,L,NE]
+RewriteRule ^patients/form\.php$ %{ENV:FRONTEND_ORIGIN}/patients/form.html [R=302,L,NE]
+RewriteRule ^patients/show\.php$ %{ENV:FRONTEND_ORIGIN}/patients/show.html [R=302,L,NE]
+RewriteRule ^patients/trash\.php$ %{ENV:FRONTEND_ORIGIN}/patients/trash.html [R=302,L,NE]
+RewriteRule ^patients/soft_delete\.php$ %{ENV:FRONTEND_ORIGIN}/patients/list.html [R=302,L,NE]
+RewriteRule ^patients/restore\.php$ %{ENV:FRONTEND_ORIGIN}/patients/trash.html [R=302,L,NE]
+
+RewriteRule ^care_plans/list\.php$ %{ENV:FRONTEND_ORIGIN}/care-plans/list.html [R=302,L,NE]
+RewriteRule ^care_plans/form\.php$ %{ENV:FRONTEND_ORIGIN}/care-plans/form.html [R=302,L,NE]
+RewriteRule ^care_plans/trash\.php$ %{ENV:FRONTEND_ORIGIN}/care-plans/trash.html [R=302,L,NE]
+RewriteRule ^care_plans/soft_delete\.php$ %{ENV:FRONTEND_ORIGIN}/care-plans/list.html [R=302,L,NE]
+RewriteRule ^care_plans/restore\.php$ %{ENV:FRONTEND_ORIGIN}/care-plans/trash.html [R=302,L,NE]
+
+RewriteRule ^encounters/list\.php$ %{ENV:FRONTEND_ORIGIN}/encounters/list.html [R=302,L,NE]
+RewriteRule ^encounters/form\.php$ %{ENV:FRONTEND_ORIGIN}/encounters/form.html [R=302,L,NE]
+RewriteRule ^encounters/trash\.php$ %{ENV:FRONTEND_ORIGIN}/encounters/trash.html [R=302,L,NE]
+RewriteRule ^encounters/soft_delete\.php$ %{ENV:FRONTEND_ORIGIN}/encounters/list.html [R=302,L,NE]
+RewriteRule ^encounters/restore\.php$ %{ENV:FRONTEND_ORIGIN}/encounters/trash.html [R=302,L,NE]
+
+RewriteRule ^transitions/list\.php$ %{ENV:FRONTEND_ORIGIN}/transitions/list.html [R=302,L,NE]
+RewriteRule ^transitions/form\.php$ %{ENV:FRONTEND_ORIGIN}/transitions/form.html [R=302,L,NE]
+RewriteRule ^transitions/trash\.php$ %{ENV:FRONTEND_ORIGIN}/transitions/trash.html [R=302,L,NE]
+RewriteRule ^transitions/soft_delete\.php$ %{ENV:FRONTEND_ORIGIN}/transitions/list.html [R=302,L,NE]
+RewriteRule ^transitions/restore\.php$ %{ENV:FRONTEND_ORIGIN}/transitions/trash.html [R=302,L,NE]
+
+RewriteRule ^admin/users/list\.php$ %{ENV:FRONTEND_ORIGIN}/admin/users/list.html [R=302,L,NE]
+RewriteRule ^admin/users/form\.php$ %{ENV:FRONTEND_ORIGIN}/admin/users/form.html [R=302,L,NE]
+RewriteRule ^admin/users/(reset_password|toggle_active)\.php$ %{ENV:FRONTEND_ORIGIN}/admin/users/list.html [R=302,L,NE]
