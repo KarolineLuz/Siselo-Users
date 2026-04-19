@@ -5,7 +5,7 @@ require_once __DIR__ . '/CarePlan.php';
 require_once __DIR__ . '/../services/Audit.php';
 
 final class Encounter {
-  public static function list(PDO $pdo, string $query = '', bool $trash = false): array {
+  public static function list(PDO $pdo, string $query = '', ?int $patientId = null, bool $trash = false): array {
     $sql = '
       SELECT e.*, p.full_name, p.cpf, p.ses
       FROM encounters e
@@ -13,6 +13,11 @@ final class Encounter {
       WHERE e.deleted_at IS ' . ($trash ? 'NOT NULL' : 'NULL') . ' AND p.deleted_at IS NULL
     ';
     $params = [];
+
+    if ($patientId !== null) {
+      $sql .= ' AND e.patient_id = :patient_id';
+      $params[':patient_id'] = $patientId;
+    }
 
     if ($query !== '') {
       $sql .= ' AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.ses LIKE :q_ses OR e.specialty LIKE :q_specialty)';
@@ -181,5 +186,18 @@ final class Encounter {
     Audit::log($pdo, $actorUserId, 'restore', 'encounters', $id, $before, ['deleted_at' => null]);
 
     return self::find($pdo, $id);
+  }
+
+  public static function destroy(PDO $pdo, int $id, int $actorUserId): ?array {
+    $before = self::find($pdo, $id, true);
+    if ($before === null || $before['deleted_at'] === null) {
+      return null;
+    }
+
+    $stmt = $pdo->prepare('DELETE FROM encounters WHERE id = :id');
+    $stmt->execute([':id' => $id]);
+    Audit::log($pdo, $actorUserId, 'destroy', 'encounters', $id, $before, null);
+
+    return $before;
   }
 }

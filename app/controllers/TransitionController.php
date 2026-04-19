@@ -8,9 +8,12 @@ final class TransitionController {
     api_require_permission($pdo, 'transitions.view');
 
     $query = trim((string)(api_query_param('q', '') ?? ''));
+    $patientId = (int)(api_query_param('patient_id', '0') ?? '0');
+    $patientId = $patientId > 0 ? $patientId : null;
     api_success([
       'q' => $query,
-      'rows' => Transition::list($pdo, $query, false),
+      'patient_id' => $patientId,
+      'rows' => Transition::list($pdo, $query, $patientId, false),
     ]);
   }
 
@@ -18,9 +21,12 @@ final class TransitionController {
     api_require_permission($pdo, 'transitions.restore');
 
     $query = trim((string)(api_query_param('q', '') ?? ''));
+    $patientId = (int)(api_query_param('patient_id', '0') ?? '0');
+    $patientId = $patientId > 0 ? $patientId : null;
     api_success([
       'q' => $query,
-      'rows' => Transition::list($pdo, $query, true),
+      'patient_id' => $patientId,
+      'rows' => Transition::list($pdo, $query, $patientId, true),
     ]);
   }
 
@@ -76,6 +82,19 @@ final class TransitionController {
     $row = Transition::restore($pdo, $id, api_require_user_id());
     if ($row === null) {
       api_error('Transicao nao encontrada.', 404);
+    }
+
+    api_success(['transition' => $row]);
+  }
+
+  public static function destroy(PDO $pdo): never {
+    api_require_permission($pdo, 'transitions.delete');
+    api_verify_csrf();
+
+    $id = (int)(api_request_input()['id'] ?? 0);
+    $row = Transition::destroy($pdo, $id, api_require_user_id());
+    if ($row === null) {
+      api_error('Transicao nao encontrada na lixeira.', 404);
     }
 
     api_success(['transition' => $row]);

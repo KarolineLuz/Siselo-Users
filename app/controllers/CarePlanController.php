@@ -22,9 +22,12 @@ final class CarePlanController {
     api_require_permission($pdo, 'careplans.restore');
 
     $query = trim((string)(api_query_param('q', '') ?? ''));
+    $patientId = (int)(api_query_param('patient_id', '0') ?? '0');
+    $patientId = $patientId > 0 ? $patientId : null;
     api_success([
       'q' => $query,
-      'rows' => CarePlan::list($pdo, $query, null, true),
+      'patient_id' => $patientId,
+      'rows' => CarePlan::list($pdo, $query, $patientId, true),
     ]);
   }
 
@@ -80,6 +83,19 @@ final class CarePlanController {
     $row = CarePlan::restore($pdo, $id, api_require_user_id());
     if ($row === null) {
       api_error('Plano nao encontrado.', 404);
+    }
+
+    api_success(['plan' => $row]);
+  }
+
+  public static function destroy(PDO $pdo): never {
+    api_require_permission($pdo, 'careplans.delete');
+    api_verify_csrf();
+
+    $id = (int)(api_request_input()['id'] ?? 0);
+    $row = CarePlan::destroy($pdo, $id, api_require_user_id());
+    if ($row === null) {
+      api_error('Plano nao encontrado na lixeira.', 404);
     }
 
     api_success(['plan' => $row]);

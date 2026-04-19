@@ -285,4 +285,27 @@ final class CarePlan {
     Audit::log($pdo, $actorUserId, 'restore', 'care_plans', $id, $before, ['deleted_at' => null]);
     return self::find($pdo, $id);
   }
+
+  public static function destroy(PDO $pdo, int $id, int $actorUserId): ?array {
+    $before = self::find($pdo, $id, true);
+    if ($before === null || $before['deleted_at'] === null) {
+      return null;
+    }
+
+    $pdo->beginTransaction();
+    try {
+      $pdo->prepare('DELETE FROM care_plan_items WHERE care_plan_id = :id')->execute([':id' => $id]);
+      $pdo->prepare('DELETE FROM care_plans WHERE id = :id')->execute([':id' => $id]);
+      Audit::log($pdo, $actorUserId, 'destroy', 'care_plans', $id, $before, null);
+      $pdo->commit();
+    } catch (Throwable $error) {
+      if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+      }
+
+      throw $error;
+    }
+
+    return $before;
+  }
 }

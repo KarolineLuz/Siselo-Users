@@ -9,7 +9,7 @@ final class Transition {
     return ['pendente', 'em_andamento', 'concluida', 'cancelada'];
   }
 
-  public static function list(PDO $pdo, string $query = '', bool $trash = false): array {
+  public static function list(PDO $pdo, string $query = '', ?int $patientId = null, bool $trash = false): array {
     $sql = '
       SELECT t.*, p.full_name, p.cpf, p.ses
       FROM transitions t
@@ -17,6 +17,11 @@ final class Transition {
       WHERE t.deleted_at IS ' . ($trash ? 'NOT NULL' : 'NULL') . ' AND p.deleted_at IS NULL
     ';
     $params = [];
+
+    if ($patientId !== null) {
+      $sql .= ' AND t.patient_id = :patient_id';
+      $params[':patient_id'] = $patientId;
+    }
 
     if ($query !== '') {
       $sql .= ' AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.ses LIKE :q_ses OR t.status LIKE :q_status OR t.to_service LIKE :q_to_service OR t.from_service LIKE :q_from_service)';
@@ -198,5 +203,18 @@ final class Transition {
     Audit::log($pdo, $actorUserId, 'restore', 'transitions', $id, $before, ['deleted_at' => null]);
 
     return self::find($pdo, $id);
+  }
+
+  public static function destroy(PDO $pdo, int $id, int $actorUserId): ?array {
+    $before = self::find($pdo, $id, true);
+    if ($before === null || $before['deleted_at'] === null) {
+      return null;
+    }
+
+    $stmt = $pdo->prepare('DELETE FROM transitions WHERE id = :id');
+    $stmt->execute([':id' => $id]);
+    Audit::log($pdo, $actorUserId, 'destroy', 'transitions', $id, $before, null);
+
+    return $before;
   }
 }
