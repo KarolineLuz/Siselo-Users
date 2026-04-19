@@ -112,4 +112,19 @@ final class PatientController {
 
     api_success(['patient' => $patient]);
   }
+
+  public static function destroy(PDO $pdo): never {
+    api_require_permission($pdo, 'patients.delete');
+    api_verify_csrf();
+
+    $input = api_request_input();
+    $id = (int)($input['id'] ?? 0);
+    $patient = Patient::destroy($pdo, $id, api_require_user_id());
+
+    if ($patient === null) {
+      api_error('Paciente nao encontrado na lixeira.', 404);
+    }
+
+    api_success(['patient' => $patient]);
+  }
 }

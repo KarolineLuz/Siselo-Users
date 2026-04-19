@@ -8,9 +8,12 @@ final class EncounterController {
     api_require_permission($pdo, 'encounters.view');
 
     $query = trim((string)(api_query_param('q', '') ?? ''));
+    $patientId = (int)(api_query_param('patient_id', '0') ?? '0');
+    $patientId = $patientId > 0 ? $patientId : null;
     api_success([
       'q' => $query,
-      'rows' => Encounter::list($pdo, $query, false),
+      'patient_id' => $patientId,
+      'rows' => Encounter::list($pdo, $query, $patientId, false),
     ]);
   }
 
@@ -18,9 +21,12 @@ final class EncounterController {
     api_require_permission($pdo, 'encounters.restore');
 
     $query = trim((string)(api_query_param('q', '') ?? ''));
+    $patientId = (int)(api_query_param('patient_id', '0') ?? '0');
+    $patientId = $patientId > 0 ? $patientId : null;
     api_success([
       'q' => $query,
-      'rows' => Encounter::list($pdo, $query, true),
+      'patient_id' => $patientId,
+      'rows' => Encounter::list($pdo, $query, $patientId, true),
     ]);
   }
 
@@ -76,6 +82,19 @@ final class EncounterController {
     $row = Encounter::restore($pdo, $id, api_require_user_id());
     if ($row === null) {
       api_error('Atendimento nao encontrado.', 404);
+    }
+
+    api_success(['encounter' => $row]);
+  }
+
+  public static function destroy(PDO $pdo): never {
+    api_require_permission($pdo, 'encounters.delete');
+    api_verify_csrf();
+
+    $id = (int)(api_request_input()['id'] ?? 0);
+    $row = Encounter::destroy($pdo, $id, api_require_user_id());
+    if ($row === null) {
+      api_error('Atendimento nao encontrado na lixeira.', 404);
     }
 
     api_success(['encounter' => $row]);

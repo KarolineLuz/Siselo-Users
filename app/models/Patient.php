@@ -366,6 +366,45 @@ final class Patient {
     return self::find($pdo, $id, false);
   }
 
+  public static function destroy(PDO $pdo, int $id, int $actorUserId): ?array {
+    $before = self::rawFind($pdo, $id, true);
+    if ($before === null || $before['deleted_at'] === null) {
+      return null;
+    }
+
+    $pdo->beginTransaction();
+    try {
+      $pdo->prepare('
+        DELETE FROM care_plan_items
+        WHERE care_plan_id IN (
+          SELECT id
+          FROM care_plans
+          WHERE patient_id = :patient_id
+        )
+      ')->execute([':patient_id' => $id]);
+
+      $pdo->prepare('DELETE FROM care_plans WHERE patient_id = :patient_id')
+        ->execute([':patient_id' => $id]);
+      $pdo->prepare('DELETE FROM encounters WHERE patient_id = :patient_id')
+        ->execute([':patient_id' => $id]);
+      $pdo->prepare('DELETE FROM transitions WHERE patient_id = :patient_id')
+        ->execute([':patient_id' => $id]);
+      $pdo->prepare('DELETE FROM patients WHERE id = :id')
+        ->execute([':id' => $id]);
+
+      Audit::log($pdo, $actorUserId, 'destroy', 'patients', $id, $before, null);
+      $pdo->commit();
+    } catch (Throwable $error) {
+      if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+      }
+
+      throw $error;
+    }
+
+    return self::serializeRow($before);
+  }
+
   public static function mapPersistenceError(Throwable $error): array {
     $field = null;
     $message = $error->getMessage();
