@@ -23,8 +23,8 @@ SET
   password_hash = '$2y$10$hmCr8lV/O.MLFyFJSpmyiOmM6xUVpzIHSy5kPTQOOhmQGQhexVOV2',
   is_active = 1,
   must_change_password = 1
-WHERE email = 'admin@local'
-  AND password_hash = '<COLE_O_HASH_AQUI>';
+WHERE email = 'admin@local';
+  -- AND password_hash = '<COLE_O_HASH_AQUI>';
 
 SET @has_patient_email := (
   SELECT COUNT(*)
