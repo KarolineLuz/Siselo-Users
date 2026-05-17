@@ -155,7 +155,7 @@ final class User {
 
         $stmt = $pdo->prepare('
           INSERT INTO users (name, email, password_hash, is_active, must_change_password)
-          VALUES (:name, :email, :password_hash, :is_active, 1)
+          VALUES (:name, :email, :password_hash, :is_active, 0)
         ');
         $stmt->execute([
           ':name' => $name,
@@ -213,7 +213,7 @@ final class User {
 
     $stmt = $pdo->prepare('
       UPDATE users
-      SET password_hash = :password_hash, must_change_password = 1, updated_at = NOW()
+      SET password_hash = :password_hash, must_change_password = 0, updated_at = NOW()
       WHERE id = :id
     ');
     $stmt->execute([

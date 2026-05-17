@@ -130,7 +130,7 @@ JOIN permissions p ON p.name IN ('patients.view')
 WHERE r.name='visualizador';
 
 INSERT INTO users (name, email, password_hash, is_active, must_change_password) VALUES
-('Administrador', 'admin@local', '$2y$10$hmCr8lV/O.MLFyFJSpmyiOmM6xUVpzIHSy5kPTQOOhmQGQhexVOV2', 1, 1);
+('Administrador', 'admin@local', '$2y$10$hmCr8lV/O.MLFyFJSpmyiOmM6xUVpzIHSy5kPTQOOhmQGQhexVOV2', 1, 0);
 
 INSERT INTO user_roles (user_id, role_id)
 SELECT u.id, r.id

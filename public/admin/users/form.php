@@ -69,11 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $hash = password_hash($tempPass, PASSWORD_DEFAULT);
 
-       $st = $pdo->prepare("
-  			INSERT INTO users (name, email, password_hash, is_active, must_change_password)
-  			VALUES (:n, :e, :h, :a, 1)
-				");
-	$st->execute([':n'=>$name, ':e'=>$email, ':h'=>$hash, ':a'=>$isActive]);
+        $st = $pdo->prepare("
+          INSERT INTO users (name, email, password_hash, is_active, must_change_password)
+          VALUES (:n, :e, :h, :a, 0)
+        ");
+        $st->execute([':n'=>$name, ':e'=>$email, ':h'=>$hash, ':a'=>$isActive]);
         $newId = (int)$pdo->lastInsertId();
 
         if (count($roleIds)) {
@@ -121,7 +121,7 @@ require __DIR__ . '/../../../app/views/layout/header.php';
     <br><br>
 
     <?php if (!$editing): ?>
-      <label>Senha temporária (o usuário troca depois)</label><br>
+      <label>Senha temporária</label><br>
       <input name="temp_password" type="text" placeholder="Ex: Temporaria@123" required style="width:260px"><br><br>
     <?php endif; ?>
 

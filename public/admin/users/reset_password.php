@@ -21,7 +21,7 @@ $st->execute([':id'=>$id]);
 $before = $st->fetch();
 if (!$before) redirect('/admin/users/list.php');
 
-$up = $pdo->prepare("UPDATE users SET password_hash=:h, must_change_password=1, updated_at=NOW() WHERE id=:id");
+$up = $pdo->prepare("UPDATE users SET password_hash=:h, must_change_password=0, updated_at=NOW() WHERE id=:id");
 $up->execute([':h'=>$newHash, ':id'=>$id]);
 
 Audit::log($pdo, current_user_id(), 'update', 'users', $id, $before, ['password_reset' => true]);
