@@ -31,6 +31,14 @@ final class Role {
     return array_values(array_column($stmt->fetchAll(), 'name'));
   }
 
+  public static function idByName(PDO $pdo, string $name): ?int {
+    $stmt = $pdo->prepare('SELECT id FROM roles WHERE name = :name LIMIT 1');
+    $stmt->execute([':name' => $name]);
+    $id = $stmt->fetchColumn();
+
+    return $id !== false ? (int)$id : null;
+  }
+
   public static function syncUserRoles(PDO $pdo, int $userId, array $roleIds): void {
     $pdo->prepare('DELETE FROM user_roles WHERE user_id = :user_id')->execute([
       ':user_id' => $userId,

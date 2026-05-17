@@ -18,13 +18,66 @@ PREPARE stmt_add_must_change_password FROM @sql_add_must_change_password;
 EXECUTE stmt_add_must_change_password;
 DEALLOCATE PREPARE stmt_add_must_change_password;
 
+SET @has_force_password_change_on_login := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'users'
+    AND COLUMN_NAME = 'force_password_change_on_login'
+);
+
+SET @sql_drop_force_password_change_on_login := IF(
+  @has_force_password_change_on_login > 0,
+  'ALTER TABLE users DROP COLUMN force_password_change_on_login',
+  'SELECT 1'
+);
+
+PREPARE stmt_drop_force_password_change_on_login FROM @sql_drop_force_password_change_on_login;
+EXECUTE stmt_drop_force_password_change_on_login;
+DEALLOCATE PREPARE stmt_drop_force_password_change_on_login;
+
+SET @has_user_type := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'users'
+    AND COLUMN_NAME = 'user_type'
+);
+
+SET @sql_add_user_type := IF(
+  @has_user_type = 0,
+  'ALTER TABLE users ADD COLUMN user_type VARCHAR(10) NULL AFTER must_change_password',
+  'SELECT 1'
+);
+
+PREPARE stmt_add_user_type FROM @sql_add_user_type;
+EXECUTE stmt_add_user_type;
+DEALLOCATE PREPARE stmt_add_user_type;
+
+SET @has_specialty := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'users'
+    AND COLUMN_NAME = 'specialty'
+);
+
+SET @sql_add_specialty := IF(
+  @has_specialty = 0,
+  'ALTER TABLE users ADD COLUMN specialty VARCHAR(80) NULL AFTER user_type',
+  'SELECT 1'
+);
+
+PREPARE stmt_add_specialty FROM @sql_add_specialty;
+EXECUTE stmt_add_specialty;
+DEALLOCATE PREPARE stmt_add_specialty;
+
 UPDATE users
 SET
   password_hash = '$2y$10$hmCr8lV/O.MLFyFJSpmyiOmM6xUVpzIHSy5kPTQOOhmQGQhexVOV2',
   is_active = 1,
-  must_change_password = 1
+  must_change_password = 0
 WHERE email = 'admin@local';
-  -- AND password_hash = '<COLE_O_HASH_AQUI>';
 
 SET @has_patient_email := (
   SELECT COUNT(*)

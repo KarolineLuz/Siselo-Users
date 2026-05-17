@@ -14,6 +14,8 @@ CREATE TABLE users (
   password_hash VARCHAR(255) NOT NULL,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
   must_change_password TINYINT(1) NOT NULL DEFAULT 0,
+  user_type VARCHAR(10) NULL,
+  specialty VARCHAR(80) NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NULL,
   deleted_at DATETIME NULL
@@ -130,7 +132,7 @@ JOIN permissions p ON p.name IN ('patients.view')
 WHERE r.name='visualizador';
 
 INSERT INTO users (name, email, password_hash, is_active, must_change_password) VALUES
-('Administrador', 'admin@local', '$2y$10$hmCr8lV/O.MLFyFJSpmyiOmM6xUVpzIHSy5kPTQOOhmQGQhexVOV2', 1, 1);
+('Administrador', 'admin@local', '$2y$10$hmCr8lV/O.MLFyFJSpmyiOmM6xUVpzIHSy5kPTQOOhmQGQhexVOV2', 1, 0);
 
 INSERT INTO user_roles (user_id, role_id)
 SELECT u.id, r.id
