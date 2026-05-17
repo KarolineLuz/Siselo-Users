@@ -15,10 +15,20 @@ final class AdminUserController {
   }
 
   public static function form(PDO $pdo): never {
-    api_require_permission($pdo, 'admin.manage');
-
+    $currentUserId = api_require_user_id();
     $id = (int)(api_query_param('id', '0') ?? '0');
     $editing = $id > 0;
+    $canManageUsers = can($pdo, 'admin.manage');
+    if (!$canManageUsers && !$editing) {
+      $id = $currentUserId;
+      $editing = true;
+    }
+
+    $isSelfProfile = $editing && $id === $currentUserId;
+
+    if (!$canManageUsers && !$isSelfProfile) {
+      api_error('Sem permissao: admin.manage', 403);
+    }
 
     if (api_request_method() === 'GET') {
       $context = User::formContext($pdo, $editing ? $id : null);
@@ -26,13 +36,22 @@ final class AdminUserController {
         api_error((string)$context['error'], 404);
       }
 
+      $context['can_manage_users'] = $canManageUsers;
+      $context['self_profile'] = !$canManageUsers && $isSelfProfile;
+
       api_success($context);
     }
 
     api_verify_csrf();
 
     try {
-      $context = User::save($pdo, $editing ? $id : null, api_request_input(), api_require_user_id());
+      $context = $canManageUsers
+        ? User::save($pdo, $editing ? $id : null, api_request_input(), $currentUserId)
+        : User::saveSelfProfile($pdo, $currentUserId, api_request_input());
+
+      $context['can_manage_users'] = $canManageUsers;
+      $context['self_profile'] = !$canManageUsers;
+
       api_success($context);
     } catch (Throwable $error) {
       api_error($error->getMessage(), 422);

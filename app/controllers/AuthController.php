@@ -30,6 +30,29 @@ final class AuthController {
     ]);
   }
 
+  public static function register(PDO $pdo): never {
+    $input = api_request_input();
+
+    try {
+      $user = User::registerPublic($pdo, $input);
+    } catch (Throwable $error) {
+      api_error($error->getMessage(), 422);
+    }
+
+    session_regenerate_id(true);
+    $_SESSION['user_id'] = (int)$user['id'];
+
+    Audit::log($pdo, (int)$user['id'], 'login', 'users', (int)$user['id'], null, [
+      'email' => (string)$user['email'],
+      'after_register' => true,
+    ]);
+
+    api_success([
+      'user' => User::apiPayload($pdo, $user),
+      'csrf' => csrf_token(),
+    ], 201);
+  }
+
   public static function me(PDO $pdo): never {
     $user = api_current_user($pdo);
 
