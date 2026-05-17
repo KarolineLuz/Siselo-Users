@@ -52,7 +52,7 @@ services:
     working_dir: /app
     command: node server.js
     volumes:
-      - ../Siselo-Frontend:/app
+      - ../../siselo-frontend/Siselo-Frontend:/app
     ports:
       - "3000:3000"
 
