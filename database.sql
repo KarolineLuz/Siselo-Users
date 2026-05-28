@@ -13,12 +13,16 @@ CREATE TABLE users (
   email VARCHAR(190) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
+  is_approved TINYINT(1) NOT NULL DEFAULT 1,
+  approved_at DATETIME NULL,
+  approved_by_user_id INT NULL,
   must_change_password TINYINT(1) NOT NULL DEFAULT 0,
   user_type VARCHAR(10) NULL,
   specialty VARCHAR(80) NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NULL,
-  deleted_at DATETIME NULL
+  deleted_at DATETIME NULL,
+  FOREIGN KEY (approved_by_user_id) REFERENCES users(id)
 );
 
 -- =========================
@@ -131,8 +135,8 @@ SELECT r.id, p.id FROM roles r
 JOIN permissions p ON p.name IN ('patients.view')
 WHERE r.name='visualizador';
 
-INSERT INTO users (name, email, password_hash, is_active, must_change_password) VALUES
-('Administrador', 'admin@local', '$2y$10$hmCr8lV/O.MLFyFJSpmyiOmM6xUVpzIHSy5kPTQOOhmQGQhexVOV2', 1, 0);
+INSERT INTO users (name, email, password_hash, is_active, is_approved, approved_at, must_change_password) VALUES
+('Administrador', 'admin@local', '$2y$10$hmCr8lV/O.MLFyFJSpmyiOmM6xUVpzIHSy5kPTQOOhmQGQhexVOV2', 1, 1, NOW(), 0);
 
 INSERT INTO user_roles (user_id, role_id)
 SELECT u.id, r.id

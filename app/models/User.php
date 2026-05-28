@@ -5,6 +5,44 @@ require_once __DIR__ . '/Role.php';
 require_once __DIR__ . '/../services/Audit.php';
 
 final class User {
+  private static function deletedEmailFor(int $id): string {
+    return sprintf('deleted+user-%d-%d@local.invalid', $id, time());
+  }
+
+  private static function releaseDeletedEmailReservation(PDO $pdo, string $email, ?int $excludeId = null, ?int $actorUserId = null): void {
+    $sql = 'SELECT * FROM users WHERE email = :email AND deleted_at IS NOT NULL';
+    $params = [':email' => $email];
+
+    if ($excludeId !== null) {
+      $sql .= ' AND id <> :id';
+      $params[':id'] = $excludeId;
+    }
+
+    $sql .= ' LIMIT 1';
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $deletedUser = $stmt->fetch();
+    if ($deletedUser === false) {
+      return;
+    }
+
+    $deletedUserId = (int)$deletedUser['id'];
+    $replacementEmail = self::deletedEmailFor($deletedUserId);
+    $update = $pdo->prepare('UPDATE users SET email = :email, updated_at = NOW() WHERE id = :id');
+    $update->execute([
+      ':email' => $replacementEmail,
+      ':id' => $deletedUserId,
+    ]);
+
+    if ($actorUserId !== null) {
+      Audit::log($pdo, $actorUserId, 'update', 'users', $deletedUserId, $deletedUser, [
+        'email' => $replacementEmail,
+        'deleted_email_released' => true,
+      ]);
+    }
+  }
+
   public static function findByEmail(PDO $pdo, string $email): ?array {
     $stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email AND deleted_at IS NULL LIMIT 1');
     $stmt->execute([':email' => $email]);
@@ -29,6 +67,9 @@ final class User {
       'name' => (string)$user['name'],
       'email' => (string)$user['email'],
       'is_active' => (int)$user['is_active'],
+      'is_approved' => (int)($user['is_approved'] ?? 1),
+      'approved_at' => isset($user['approved_at']) ? (string)$user['approved_at'] : null,
+      'approved_by_user_id' => isset($user['approved_by_user_id']) ? (int)$user['approved_by_user_id'] : null,
       'must_change_password' => (int)$user['must_change_password'],
       'user_type' => isset($user['user_type']) ? (string)$user['user_type'] : null,
       'specialty' => isset($user['specialty']) ? (string)$user['specialty'] : null,
@@ -52,6 +93,22 @@ final class User {
       'Técnico de Enfermagem',
       'Gestão do Cuidado',
     ];
+  }
+
+  public static function accessBlockMessage(?array $user): ?string {
+    if ($user === null) {
+      return null;
+    }
+
+    if ((int)($user['is_approved'] ?? 1) !== 1) {
+      return 'Sua conta ainda esta aguardando aprovacao do administrador.';
+    }
+
+    if ((int)($user['is_active'] ?? 0) !== 1) {
+      return 'Sua conta esta inativa. Fale com o administrador.';
+    }
+
+    return null;
   }
 
   public static function registerPublic(PDO $pdo, array $payload): array {
@@ -89,7 +146,7 @@ final class User {
       $specialty = '';
     }
 
-    $emailStmt = $pdo->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');
+    $emailStmt = $pdo->prepare('SELECT id FROM users WHERE email = :email AND deleted_at IS NULL LIMIT 1');
     $emailStmt->execute([':email' => $email]);
     if ($emailStmt->fetchColumn() !== false) {
       throw new RuntimeException('Ja existe uma conta com este email.');
@@ -103,9 +160,11 @@ final class User {
     $pdo->beginTransaction();
 
     try {
+      self::releaseDeletedEmailReservation($pdo, $email);
+
       $stmt = $pdo->prepare('
-        INSERT INTO users (name, email, password_hash, is_active, must_change_password, user_type, specialty)
-        VALUES (:name, :email, :password_hash, 1, 0, :user_type, :specialty)
+        INSERT INTO users (name, email, password_hash, is_active, is_approved, approved_at, approved_by_user_id, must_change_password, user_type, specialty)
+        VALUES (:name, :email, :password_hash, 1, 0, NULL, NULL, 0, :user_type, :specialty)
       ');
       $stmt->execute([
         ':name' => $name,
@@ -122,6 +181,7 @@ final class User {
         'name' => $name,
         'email' => $email,
         'is_active' => 1,
+        'is_approved' => 0,
         'must_change_password' => 0,
         'user_type' => $userType,
         'specialty' => $specialty !== '' ? $specialty : null,
@@ -142,6 +202,10 @@ final class User {
         $pdo->rollBack();
       }
 
+      if ($error instanceof PDOException && str_contains($error->getMessage(), 'users.email')) {
+        throw new RuntimeException('Ja existe uma conta com este email.');
+      }
+
       throw $error;
     }
   }
@@ -156,7 +220,7 @@ final class User {
       $params[':q_email'] = '%' . $query . '%';
     }
 
-    $sql .= ' ORDER BY u.id DESC LIMIT 300';
+    $sql .= ' ORDER BY u.is_approved ASC, u.id DESC LIMIT 300';
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
@@ -166,6 +230,9 @@ final class User {
       static function (array $row) use ($pdo): array {
         $row['id'] = (int)$row['id'];
         $row['is_active'] = (int)$row['is_active'];
+        $row['is_approved'] = (int)($row['is_approved'] ?? 1);
+        $row['approved_by_user_id'] = isset($row['approved_by_user_id']) ? (int)$row['approved_by_user_id'] : null;
+        $row['approved_at'] = isset($row['approved_at']) ? (string)$row['approved_at'] : null;
         $row['must_change_password'] = (int)$row['must_change_password'];
         $row['user_type'] = isset($row['user_type']) ? (string)$row['user_type'] : '';
         $row['specialty'] = isset($row['specialty']) ? (string)$row['specialty'] : '';
@@ -182,6 +249,7 @@ final class User {
       'name' => '',
       'email' => '',
       'is_active' => 1,
+      'is_approved' => 1,
       'user_type' => '',
       'specialty' => '',
       'role_ids' => [],
@@ -204,6 +272,8 @@ final class User {
         'name' => (string)$row['name'],
         'email' => (string)$row['email'],
         'is_active' => (int)$row['is_active'],
+        'is_approved' => (int)($row['is_approved'] ?? 1),
+        'approved_at' => isset($row['approved_at']) ? (string)$row['approved_at'] : null,
         'user_type' => isset($row['user_type']) ? (string)$row['user_type'] : '',
         'specialty' => isset($row['specialty']) ? (string)$row['specialty'] : '',
         'role_ids' => Role::idsForUser($pdo, (int)$row['id']),
@@ -247,9 +317,20 @@ final class User {
       $specialty = '';
     }
 
+    $emailStmt = $pdo->prepare('SELECT id FROM users WHERE email = :email AND deleted_at IS NULL AND id <> :id LIMIT 1');
+    $emailStmt->execute([
+      ':email' => $email,
+      ':id' => $editing ? $id : 0,
+    ]);
+    if ($emailStmt->fetchColumn() !== false) {
+      throw new RuntimeException('Ja existe uma conta com este email.');
+    }
+
     $pdo->beginTransaction();
 
     try {
+      self::releaseDeletedEmailReservation($pdo, $email, $editing ? $id : null, $actorUserId);
+
       if ($editing) {
         $before = self::findById($pdo, $id);
         if ($before === null) {
@@ -295,14 +376,15 @@ final class User {
         }
 
         $stmt = $pdo->prepare('
-          INSERT INTO users (name, email, password_hash, is_active, must_change_password, user_type, specialty)
-          VALUES (:name, :email, :password_hash, :is_active, 0, :user_type, :specialty)
+          INSERT INTO users (name, email, password_hash, is_active, is_approved, approved_at, approved_by_user_id, must_change_password, user_type, specialty)
+          VALUES (:name, :email, :password_hash, :is_active, 1, NOW(), :approved_by_user_id, 0, :user_type, :specialty)
         ');
         $stmt->execute([
           ':name' => $name,
           ':email' => $email,
           ':password_hash' => password_hash($tempPassword, PASSWORD_DEFAULT),
           ':is_active' => $isActive,
+          ':approved_by_user_id' => $actorUserId,
           ':user_type' => $userType !== '' ? $userType : null,
           ':specialty' => $specialty !== '' ? $specialty : null,
         ]);
@@ -314,6 +396,7 @@ final class User {
           'name' => $name,
           'email' => $email,
           'is_active' => $isActive,
+          'is_approved' => 1,
           'user_type' => $userType !== '' ? $userType : null,
           'specialty' => $specialty !== '' ? $specialty : null,
           'role_ids' => $roleIds,
@@ -325,6 +408,10 @@ final class User {
     } catch (Throwable $error) {
       if ($pdo->inTransaction()) {
         $pdo->rollBack();
+      }
+
+      if ($error instanceof PDOException && str_contains($error->getMessage(), 'users.email')) {
+        throw new RuntimeException('Ja existe uma conta com este email.');
       }
 
       throw $error;
@@ -362,7 +449,7 @@ final class User {
       $specialty = '';
     }
 
-    $emailStmt = $pdo->prepare('SELECT id FROM users WHERE email = :email AND id <> :id LIMIT 1');
+    $emailStmt = $pdo->prepare('SELECT id FROM users WHERE email = :email AND deleted_at IS NULL AND id <> :id LIMIT 1');
     $emailStmt->execute([
       ':email' => $email,
       ':id' => $id,
@@ -371,33 +458,50 @@ final class User {
       throw new RuntimeException('Ja existe uma conta com este email.');
     }
 
-    $stmt = $pdo->prepare('
-      UPDATE users
-      SET
-        name = :name,
-        email = :email,
-        user_type = :user_type,
-        specialty = :specialty,
-        updated_at = NOW()
-      WHERE id = :id
-    ');
-    $stmt->execute([
-      ':name' => $name,
-      ':email' => $email,
-      ':user_type' => $userType !== '' ? $userType : null,
-      ':specialty' => $specialty !== '' ? $specialty : null,
-      ':id' => $id,
-    ]);
+    $pdo->beginTransaction();
 
-    Audit::log($pdo, $id, 'update', 'users', $id, $before, [
-      'name' => $name,
-      'email' => $email,
-      'user_type' => $userType !== '' ? $userType : null,
-      'specialty' => $specialty !== '' ? $specialty : null,
-      'self_profile' => true,
-    ]);
+    try {
+      self::releaseDeletedEmailReservation($pdo, $email, $id, $id);
 
-    return self::formContext($pdo, $id);
+      $stmt = $pdo->prepare('
+        UPDATE users
+        SET
+          name = :name,
+          email = :email,
+          user_type = :user_type,
+          specialty = :specialty,
+          updated_at = NOW()
+        WHERE id = :id
+      ');
+      $stmt->execute([
+        ':name' => $name,
+        ':email' => $email,
+        ':user_type' => $userType !== '' ? $userType : null,
+        ':specialty' => $specialty !== '' ? $specialty : null,
+        ':id' => $id,
+      ]);
+
+      Audit::log($pdo, $id, 'update', 'users', $id, $before, [
+        'name' => $name,
+        'email' => $email,
+        'user_type' => $userType !== '' ? $userType : null,
+        'specialty' => $specialty !== '' ? $specialty : null,
+        'self_profile' => true,
+      ]);
+
+      $pdo->commit();
+      return self::formContext($pdo, $id);
+    } catch (Throwable $error) {
+      if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+      }
+
+      if ($error instanceof PDOException && str_contains($error->getMessage(), 'users.email')) {
+        throw new RuntimeException('Ja existe uma conta com este email.');
+      }
+
+      throw $error;
+    }
   }
 
   public static function toggleActive(PDO $pdo, int $id, int $actorUserId): ?array {
@@ -417,6 +521,68 @@ final class User {
 
     $after = self::findById($pdo, $id);
     return $after !== null ? self::apiPayload($pdo, $after) : null;
+  }
+
+  public static function approve(PDO $pdo, int $id, int $actorUserId): ?array {
+    $before = self::findById($pdo, $id);
+    if ($before === null) {
+      return null;
+    }
+
+    $stmt = $pdo->prepare('
+      UPDATE users
+      SET
+        is_approved = 1,
+        approved_at = COALESCE(approved_at, NOW()),
+        approved_by_user_id = :approved_by_user_id,
+        updated_at = NOW()
+      WHERE id = :id
+    ');
+    $stmt->execute([
+      ':approved_by_user_id' => $actorUserId,
+      ':id' => $id,
+    ]);
+
+    Audit::log($pdo, $actorUserId, 'approve', 'users', $id, $before, [
+      'is_approved' => 1,
+      'approved_by_user_id' => $actorUserId,
+    ]);
+
+    $after = self::findById($pdo, $id);
+    return $after !== null ? self::apiPayload($pdo, $after) : null;
+  }
+
+  public static function softDelete(PDO $pdo, int $id, int $actorUserId): ?array {
+    $before = self::findById($pdo, $id);
+    if ($before === null) {
+      return null;
+    }
+
+    if ($id === $actorUserId) {
+      throw new RuntimeException('Nao e permitido excluir o proprio usuario.');
+    }
+
+    $deletedEmail = self::deletedEmailFor($id);
+
+    $stmt = $pdo->prepare('
+      UPDATE users
+      SET email = :deleted_email, deleted_at = NOW(), updated_at = NOW()
+      WHERE id = :id
+    ');
+    $stmt->execute([
+      ':deleted_email' => $deletedEmail,
+      ':id' => $id,
+    ]);
+
+    Audit::log($pdo, $actorUserId, 'delete', 'users', $id, $before, [
+      'email' => $deletedEmail,
+      'deleted_at' => date('c'),
+    ]);
+
+    return [
+      'id' => $id,
+      'deleted' => true,
+    ];
   }
 
   public static function resetPassword(PDO $pdo, int $id, int $actorUserId): ?array {

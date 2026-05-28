@@ -15,7 +15,8 @@ final class AdminUserController {
   }
 
   public static function form(PDO $pdo): never {
-    $currentUserId = api_require_user_id();
+    $currentUser = api_current_user($pdo);
+    $currentUserId = (int)$currentUser['id'];
     $id = (int)(api_query_param('id', '0') ?? '0');
     $editing = $id > 0;
     $canManageUsers = can($pdo, 'admin.manage');
@@ -89,5 +90,40 @@ final class AdminUserController {
       'user' => $user,
       'temporary_password' => 'Temporaria@123',
     ]);
+  }
+
+  public static function approve(PDO $pdo): never {
+    api_require_permission($pdo, 'admin.manage');
+    api_verify_csrf();
+
+    $input = api_request_input();
+    $id = (int)($input['id'] ?? 0);
+    $user = User::approve($pdo, $id, api_require_user_id());
+
+    if ($user === null) {
+      api_error('Usuario nao encontrado.', 404);
+    }
+
+    api_success(['user' => $user]);
+  }
+
+  public static function softDelete(PDO $pdo): never {
+    api_require_permission($pdo, 'admin.manage');
+    api_verify_csrf();
+
+    $input = api_request_input();
+    $id = (int)($input['id'] ?? 0);
+
+    try {
+      $result = User::softDelete($pdo, $id, api_require_user_id());
+    } catch (Throwable $error) {
+      api_error($error->getMessage(), 422);
+    }
+
+    if ($result === null) {
+      api_error('Usuario nao encontrado.', 404);
+    }
+
+    api_success($result);
   }
 }

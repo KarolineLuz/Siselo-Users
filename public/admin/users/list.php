@@ -17,7 +17,7 @@ if ($q !== '') {
   $params[':q_name'] = "%{$q}%";
   $params[':q_email'] = "%{$q}%";
 }
-$sql .= " ORDER BY u.id DESC LIMIT 300";
+$sql .= " ORDER BY u.is_approved ASC, u.id DESC LIMIT 300";
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
@@ -41,9 +41,9 @@ require __DIR__ . '/../../../app/views/layout/header.php';
 ?>
 <!doctype html>
 <html>
-<head><meta charset="utf-8"><title>Admin - Usuários</title></head>
+<head><meta charset="utf-8"><title>Admin - Usu&aacute;rios</title></head>
 <body>
-  <h1>Admin: Usuários</h1>
+  <h1>Admin: Usu&aacute;rios</h1>
 
   <form method="get">
     <input name="q" value="<?= h($q) ?>" placeholder="Buscar nome/email">
@@ -51,13 +51,13 @@ require __DIR__ . '/../../../app/views/layout/header.php';
   </form>
 
   <p>
-    <a href="/../admin/users/form.php">+ Novo usuário</a> |
+    <a href="/../admin/users/form.php">+ Novo usu&aacute;rio</a> |
     <a href="/../index.php">Voltar</a>
   </p>
 
   <table border="1" cellpadding="6">
     <tr>
-      <th>ID</th><th>Nome</th><th>Email</th><th>Roles</th><th>Status</th><th>Ações</th>
+      <th>ID</th><th>Nome</th><th>Email</th><th>Roles</th><th>Valida&ccedil;&atilde;o</th><th>Status</th><th>A&ccedil;&otilde;es</th>
     </tr>
     <?php foreach ($users as $u): ?>
       <tr>
@@ -65,9 +65,18 @@ require __DIR__ . '/../../../app/views/layout/header.php';
         <td><?= h($u['name']) ?></td>
         <td><?= h($u['email']) ?></td>
         <td><?= h(roles_for($pdo, (int)$u['id'])) ?></td>
+        <td><?= ((int)($u['is_approved'] ?? 1)===1) ? 'Aprovado' : 'Pendente' ?></td>
         <td><?= ((int)$u['is_active']===1) ? 'Ativo' : 'Inativo' ?></td>
         <td>
           <a href="/../admin/users/form.php?id=<?= (int)$u['id'] ?>">Editar</a>
+
+          <?php if ((int)($u['is_approved'] ?? 1) !== 1): ?>
+            <form method="post" action="/../admin/users/approve.php" style="display:inline">
+              <?= csrf_field() ?>
+              <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
+              <button type="submit">Aprovar</button>
+            </form>
+          <?php endif; ?>
 
           <form method="post" action="/../admin/users/toggle_active.php" style="display:inline">
             <?= csrf_field() ?>
@@ -79,6 +88,12 @@ require __DIR__ . '/../../../app/views/layout/header.php';
             <?= csrf_field() ?>
             <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
             <button type="submit" onclick="return confirm('Resetar senha para Temporaria@123?')">Reset senha</button>
+          </form>
+
+          <form method="post" action="/../admin/users/soft_delete.php" style="display:inline">
+            <?= csrf_field() ?>
+            <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
+            <button type="submit" onclick="return confirm('Excluir este usu&aacute;rio?')">Excluir</button>
           </form>
         </td>
       </tr>

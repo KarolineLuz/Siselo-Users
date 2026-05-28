@@ -18,11 +18,16 @@ function api_current_user(PDO $pdo): array {
     api_error('Sessao invalida.', 401);
   }
 
+  $accessBlockMessage = User::accessBlockMessage($user);
+  if ($accessBlockMessage !== null) {
+    api_error($accessBlockMessage, 403);
+  }
+
   return $user;
 }
 
 function api_require_permission(PDO $pdo, string $permission): int {
-  $userId = api_require_user_id();
+  $userId = (int)api_current_user($pdo)['id'];
   if (!can($pdo, $permission)) {
     api_error('Sem permissao: ' . $permission, 403);
   }
