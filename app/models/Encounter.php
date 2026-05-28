@@ -7,7 +7,7 @@ require_once __DIR__ . '/../services/Audit.php';
 final class Encounter {
   public static function list(PDO $pdo, string $query = '', ?int $patientId = null, bool $trash = false): array {
     $sql = '
-      SELECT e.*, p.full_name, p.cpf, p.ses
+      SELECT e.*, p.full_name, p.cpf, p.team_ref
       FROM encounters e
       JOIN patients p ON p.id = e.patient_id
       WHERE e.deleted_at IS ' . ($trash ? 'NOT NULL' : 'NULL') . ' AND p.deleted_at IS NULL
@@ -20,10 +20,10 @@ final class Encounter {
     }
 
     if ($query !== '') {
-      $sql .= ' AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.ses LIKE :q_ses OR e.specialty LIKE :q_specialty)';
+      $sql .= ' AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.team_ref LIKE :q_team_ref OR e.specialty LIKE :q_specialty)';
       $params[':q_full_name'] = '%' . $query . '%';
       $params[':q_cpf'] = '%' . $query . '%';
-      $params[':q_ses'] = '%' . $query . '%';
+      $params[':q_team_ref'] = '%' . $query . '%';
       $params[':q_specialty'] = '%' . $query . '%';
     }
 

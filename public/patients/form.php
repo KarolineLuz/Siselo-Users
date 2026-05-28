@@ -78,10 +78,6 @@ function patient_form_format_cpf(string $digits): string {
     . substr($digits, 9, 2);
 }
 
-function patient_form_is_valid_ses(string $digits): bool {
-  return preg_match('/^\d{9}$/', $digits) === 1;
-}
-
 function patient_form_format_phone(string $digits): string {
   $length = strlen($digits);
 
@@ -111,13 +107,46 @@ function patient_form_normalize_choice(string $value, array $allowed): string {
 }
 
 function patient_form_normalize_option_value(string $value, array $options): string {
+  $normalizedValue = patient_form_normalize_option_comparable($value);
+  $aliases = [
+    'amarelo' => 'amarela',
+  ];
+
+  if (isset($aliases[$normalizedValue])) {
+    return $aliases[$normalizedValue];
+  }
+
   foreach ($options as $optionValue => $label) {
-    if (strcasecmp($value, (string)$optionValue) === 0 || strcasecmp($value, (string)$label) === 0) {
+    if (
+      $normalizedValue === patient_form_normalize_option_comparable((string)$optionValue) ||
+      $normalizedValue === patient_form_normalize_option_comparable((string)$label)
+    ) {
       return (string)$optionValue;
     }
   }
 
   return $value;
+}
+
+function patient_form_normalize_option_comparable(string $value): string {
+  $normalized = strtolower(trim($value));
+  $normalized = preg_replace('/^equipe\s*:\s*/i', '', $normalized) ?? $normalized;
+  $normalized = strtr($normalized, [
+    'á' => 'a',
+    'à' => 'a',
+    'ã' => 'a',
+    'â' => 'a',
+    'é' => 'e',
+    'ê' => 'e',
+    'í' => 'i',
+    'ó' => 'o',
+    'ô' => 'o',
+    'õ' => 'o',
+    'ú' => 'u',
+    'ç' => 'c',
+  ]);
+  $normalized = preg_replace('/[^a-z0-9]+/', ' ', $normalized) ?? $normalized;
+  return trim($normalized);
 }
 
 function patient_form_set_error(array &$errors, string $field, string $message): void {
@@ -144,7 +173,6 @@ function patient_form_map_save_error(Throwable $e): array {
   $labels = [
     'first_cadh_date' => 'Data do primeiro atendimento CADH',
     'full_name' => 'Nome completo',
-    'ses' => 'SES',
     'cpf' => 'CPF',
     'birth_date' => 'Data de nascimento',
     'sex' => 'Genero',
@@ -154,13 +182,11 @@ function patient_form_map_save_error(Throwable $e): array {
     'address' => 'Endereco',
     'email' => 'Email',
     'emergency_contact' => 'Contato de emergencia',
-    'health_insurance' => 'Convenio',
-    'blood_type' => 'Tipo sanguineo',
     'allergies' => 'Alergias',
     'chronic_conditions' => 'Condicoes cronicas',
     'status' => 'Status',
     'ubs_ref' => 'UBS de referencia',
-    'team_ref' => 'Equipe de referencia',
+    'team_ref' => 'Equipe',
   ];
 
   $field = null;
@@ -219,7 +245,6 @@ $errors = [];
 
 $fieldMaxLengths = [
   'full_name' => 180,
-  'ses' => 9,
   'cpf' => 14,
   'sex' => 20,
   'race' => 40,
@@ -228,8 +253,6 @@ $fieldMaxLengths = [
   'address' => 255,
   'email' => 190,
   'emergency_contact' => 15,
-  'health_insurance' => 160,
-  'blood_type' => 5,
   'status' => 20,
   'ubs_ref' => 120,
   'team_ref' => 120,
@@ -238,7 +261,6 @@ $fieldMaxLengths = [
 $fieldLabels = [
   'first_cadh_date' => 'Data do primeiro atendimento CADH',
   'full_name' => 'Nome completo',
-  'ses' => 'SES',
   'cpf' => 'CPF',
   'birth_date' => 'Data de nascimento',
   'sex' => 'Genero',
@@ -248,13 +270,11 @@ $fieldLabels = [
   'address' => 'Endereco',
   'email' => 'Email',
   'emergency_contact' => 'Contato de emergencia',
-  'health_insurance' => 'Convenio',
-  'blood_type' => 'Tipo sanguineo',
   'allergies' => 'Alergias',
   'chronic_conditions' => 'Condicoes cronicas',
   'status' => 'Status',
   'ubs_ref' => 'UBS de referencia',
-  'team_ref' => 'Equipe de referencia',
+  'team_ref' => 'Equipe',
 ];
 
 $genderOptions = [
@@ -272,16 +292,22 @@ $raceOptions = [
   'nao_informado' => 'Nao informado',
 ];
 
-$bloodTypeOptions = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 $statusOptions = [
   'ativo' => 'Ativo',
   'inativo' => 'Inativo',
 ];
 
+$teamOptions = [
+  'sem_equipe' => 'Sem equipe',
+  'safira' => 'Safira',
+  'ametista' => 'Ametista',
+  'esmeralda' => 'Esmeralda',
+  'diamante' => 'Diamante',
+];
+
 $requiredFields = [
   'first_cadh_date',
   'full_name',
-  'ses',
   'cpf',
   'birth_date',
   'sex',
@@ -291,8 +317,6 @@ $requiredFields = [
   'address',
   'email',
   'emergency_contact',
-  'health_insurance',
-  'blood_type',
   'allergies',
   'chronic_conditions',
   'ubs_ref',
@@ -331,8 +355,6 @@ if ($editing) {
     'address' => '',
     'email' => '',
     'emergency_contact' => '',
-    'health_insurance' => '',
-    'blood_type' => '',
     'allergies' => '',
     'chronic_conditions' => '',
     'status' => 'ativo',
@@ -345,8 +367,6 @@ if ($editing) {
 $patientExtendedDefaults = [
   'email' => '',
   'emergency_contact' => '',
-  'health_insurance' => '',
-  'blood_type' => '',
   'allergies' => '',
   'chronic_conditions' => '',
   'status' => 'ativo',
@@ -359,17 +379,24 @@ if (is_array($originalRow)) {
 
 $row['sex'] = patient_form_normalize_option_value((string)($row['sex'] ?? ''), $genderOptions);
 $row['race'] = patient_form_normalize_option_value((string)($row['race'] ?? ''), $raceOptions);
-$row['ses'] = patient_form_digits_only((string)($row['ses'] ?? ''));
 $row['status'] = patient_form_normalize_option_value((string)($row['status'] ?? 'ativo'), $statusOptions);
-$row['blood_type'] = in_array((string)($row['blood_type'] ?? ''), $bloodTypeOptions, true) ? (string)$row['blood_type'] : '';
+$row['team_ref'] = patient_form_normalize_option_value((string)($row['team_ref'] ?? ''), $teamOptions);
+if ($row['team_ref'] === '') {
+  $row['team_ref'] = 'sem_equipe';
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   csrf_verify();
 
+  $teamRef = patient_form_normalize_option_value(trim((string)($_POST['team_reference'] ?? $_POST['team_ref'] ?? '')), $teamOptions);
+  if ($teamRef === '') {
+    $teamRef = 'sem_equipe';
+  }
+
   $data = [
     'first_cadh_date' => patient_form_normalize_optional($_POST['attendance_date'] ?? $_POST['first_cadh_date'] ?? null),
     'full_name' => patient_form_normalize_single_line((string)($_POST['full_name'] ?? '')),
-    'ses' => trim((string)($_POST['ses'] ?? '')),
+    'ses' => '',
     'cpf' => patient_form_normalize_optional($_POST['cpf'] ?? null),
     'birth_date' => patient_form_normalize_optional($_POST['birth_date'] ?? null),
     'sex' => patient_form_normalize_option_value(trim((string)($_POST['gender'] ?? $_POST['sex'] ?? '')), $genderOptions),
@@ -379,13 +406,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     'address' => patient_form_normalize_single_line((string)($_POST['address'] ?? '')),
     'email' => trim((string)($_POST['email'] ?? $_POST['contact_email'] ?? '')),
     'emergency_contact' => trim((string)($_POST['emergency_contact'] ?? '')),
-    'health_insurance' => patient_form_normalize_single_line((string)($_POST['health_insurance'] ?? $_POST['insurance_name'] ?? '')),
-    'blood_type' => trim((string)($_POST['blood_type'] ?? '')),
+    'health_insurance' => '',
+    'blood_type' => '',
     'allergies' => trim((string)($_POST['allergies'] ?? '')),
     'chronic_conditions' => trim((string)($_POST['chronic_conditions'] ?? '')),
     'status' => patient_form_normalize_option_value(trim((string)($_POST['status'] ?? 'ativo')), $statusOptions),
     'ubs_ref' => patient_form_normalize_single_line((string)($_POST['uds_reference'] ?? $_POST['ubs_ref'] ?? '')),
-    'team_ref' => patient_form_normalize_single_line((string)($_POST['team_reference'] ?? $_POST['team_ref'] ?? '')),
+    'team_ref' => $teamRef,
   ];
 
   foreach ($requiredFields as $field) {
@@ -411,13 +438,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     patient_form_set_error($errors, 'birth_date', 'Informe uma data entre 1900 e 2026.');
   }
 
-  $sesDigits = patient_form_digits_only($data['ses']);
-  if ($data['ses'] !== '' && !patient_form_is_valid_ses($sesDigits)) {
-    patient_form_set_error($errors, 'ses', 'Numero SES deve conter exatamente 9 digitos.');
-  } elseif ($data['ses'] !== '') {
-    $data['ses'] = $sesDigits;
-  }
-
   if ($data['cpf'] !== null) {
     $cpfDigits = patient_form_digits_only($data['cpf']);
 
@@ -440,12 +460,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     patient_form_set_error($errors, 'email', 'Informe um email valido.');
   }
 
-  if ($data['blood_type'] !== '' && !in_array($data['blood_type'], $bloodTypeOptions, true)) {
-    patient_form_set_error($errors, 'blood_type', 'Selecione um tipo sanguineo valido.');
-  }
-
   if ($data['status'] !== '' && !array_key_exists($data['status'], $statusOptions)) {
     patient_form_set_error($errors, 'status', 'Selecione um status valido.');
+  }
+
+  if ($data['team_ref'] !== '' && !array_key_exists($data['team_ref'], $teamOptions)) {
+    patient_form_set_error($errors, 'team_ref', 'Selecione uma equipe valida.');
   }
 
   $phoneDigits = patient_form_digits_only($data['phone']);
@@ -745,24 +765,6 @@ require __DIR__ . '/../../app/views/layout/header.php';
       </div>
 
       <div class="form-field">
-        <label class="form-label" for="ses">SES <span class="required-marker">*</span></label>
-        <input
-          class="form-control"
-          id="ses"
-          name="ses"
-          value="<?= h($row['ses']) ?>"
-          required
-          maxlength="9"
-          inputmode="numeric"
-          placeholder="Numero SES"
-          style="<?= h(patient_form_field_style($errors, 'ses')) ?>"
-        >
-        <?php if (patient_form_field_error($errors, 'ses') !== ''): ?>
-          <div class="field-error"><?= h(patient_form_field_error($errors, 'ses')) ?></div>
-        <?php endif; ?>
-      </div>
-
-      <div class="form-field">
         <label class="form-label" for="cpf">CPF <span class="required-marker">*</span></label>
         <input
           class="form-control"
@@ -850,6 +852,25 @@ require __DIR__ . '/../../app/views/layout/header.php';
         >
         <?php if (patient_form_field_error($errors, 'responsible_name') !== ''): ?>
           <div class="field-error"><?= h(patient_form_field_error($errors, 'responsible_name')) ?></div>
+        <?php endif; ?>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="team_reference">Equipe <span class="required-marker">*</span></label>
+        <select
+          class="form-control"
+          id="team_reference"
+          name="team_ref"
+          required
+          style="<?= h(patient_form_field_style($errors, 'team_ref')) ?>"
+        >
+          <option value="">Selecione</option>
+          <?php foreach ($teamOptions as $value => $label): ?>
+            <option value="<?= h($value) ?>" <?= ($row['team_ref'] === $value) ? 'selected' : '' ?>><?= h($label) ?></option>
+          <?php endforeach; ?>
+        </select>
+        <?php if (patient_form_field_error($errors, 'team_ref') !== ''): ?>
+          <div class="field-error"><?= h(patient_form_field_error($errors, 'team_ref')) ?></div>
         <?php endif; ?>
       </div>
     </div>
@@ -951,57 +972,6 @@ require __DIR__ . '/../../app/views/layout/header.php';
         <?php endif; ?>
       </div>
 
-      <div class="form-field">
-        <label class="form-label" for="team_reference">Equipe Referencia <span class="required-marker">*</span></label>
-        <input
-          class="form-control"
-          id="team_reference"
-          name="team_reference"
-          value="<?= h($row['team_ref']) ?>"
-          required
-          maxlength="120"
-          placeholder="Equipe de referencia"
-          style="<?= h(patient_form_field_style($errors, 'team_ref')) ?>"
-        >
-        <?php if (patient_form_field_error($errors, 'team_ref') !== ''): ?>
-          <div class="field-error"><?= h(patient_form_field_error($errors, 'team_ref')) ?></div>
-        <?php endif; ?>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label" for="health_insurance">Convenio <span class="required-marker">*</span></label>
-        <input
-          class="form-control"
-          id="health_insurance"
-          name="health_insurance"
-          value="<?= h($row['health_insurance']) ?>"
-          required
-          placeholder="Nome do convenio"
-          style="<?= h(patient_form_field_style($errors, 'health_insurance')) ?>"
-        >
-        <?php if (patient_form_field_error($errors, 'health_insurance') !== ''): ?>
-          <div class="field-error"><?= h(patient_form_field_error($errors, 'health_insurance')) ?></div>
-        <?php endif; ?>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label" for="blood_type">Tipo Sanguineo <span class="required-marker">*</span></label>
-        <select
-          class="form-control"
-          id="blood_type"
-          name="blood_type"
-          required
-          style="<?= h(patient_form_field_style($errors, 'blood_type')) ?>"
-        >
-          <option value="">Selecione</option>
-          <?php foreach ($bloodTypeOptions as $option): ?>
-            <option value="<?= h($option) ?>" <?= ($row['blood_type'] === $option) ? 'selected' : '' ?>><?= h($option) ?></option>
-          <?php endforeach; ?>
-        </select>
-        <?php if (patient_form_field_error($errors, 'blood_type') !== ''): ?>
-          <div class="field-error"><?= h(patient_form_field_error($errors, 'blood_type')) ?></div>
-        <?php endif; ?>
-      </div>
     </div>
   </section>
 
@@ -1047,7 +1017,6 @@ require __DIR__ . '/../../app/views/layout/header.php';
 </form>
 
 <script>
-  const sesInput = document.querySelector('input[name="ses"]');
   const cpfInput = document.querySelector('input[name="cpf"]');
   const phoneInput = document.querySelector('input[name="phone"]');
   const emergencyContactInput = document.querySelector('input[name="emergency_contact"]');
@@ -1072,13 +1041,6 @@ require __DIR__ . '/../../app/views/layout/header.php';
     if (digits.length <= 6) return '(' + digits.slice(0, 2) + ') ' + digits.slice(2);
     if (digits.length <= 10) return '(' + digits.slice(0, 2) + ') ' + digits.slice(2, 6) + '-' + digits.slice(6);
     return '(' + digits.slice(0, 2) + ') ' + digits.slice(2, 7) + '-' + digits.slice(7);
-  }
-
-  if (sesInput) {
-    sesInput.addEventListener('input', () => {
-      sesInput.value = digitsOnly(sesInput.value).slice(0, 9);
-    });
-    sesInput.value = digitsOnly(sesInput.value).slice(0, 9);
   }
 
   if (cpfInput) {

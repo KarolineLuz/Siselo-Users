@@ -13,7 +13,7 @@ $editing = $id !== null;
 
 $prefPatientId = isset($_GET['patient_id']) ? (int)$_GET['patient_id'] : 0;
 
-$patients = $pdo->query("SELECT id, full_name, cpf, ses FROM patients WHERE deleted_at IS NULL ORDER BY full_name ASC LIMIT 800")->fetchAll();
+$patients = $pdo->query("SELECT id, full_name, cpf, team_ref FROM patients WHERE deleted_at IS NULL ORDER BY full_name ASC LIMIT 800")->fetchAll();
 
 if ($editing) {
   require_permission($pdo, 'encounters.update');
@@ -105,7 +105,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
       <?php foreach ($patients as $p): ?>
         <option value="<?= (int)$p['id'] ?>"
           <?= ((int)$row['patient_id']===(int)$p['id']) ? 'selected' : '' ?>>
-          <?= h($p['full_name']) ?> (CPF: <?= h($p['cpf']) ?> | SES: <?= h($p['ses']) ?>)
+          <?= h($p['full_name']) ?> (CPF: <?= h($p['cpf']) ?> | Equipe: <?= h($p['team_ref']) ?>)
         </option>
       <?php endforeach; ?>
     </select>

@@ -28,7 +28,7 @@ if ($editing) {
   $items = [];
 }
 
-$patients = $pdo->query("SELECT id, full_name, cpf, ses FROM patients WHERE deleted_at IS NULL ORDER BY full_name ASC LIMIT 500")->fetchAll();
+$patients = $pdo->query("SELECT id, full_name, cpf, team_ref FROM patients WHERE deleted_at IS NULL ORDER BY full_name ASC LIMIT 500")->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   csrf_verify();
@@ -136,7 +136,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
       <option value="">-- selecione --</option>
       <?php foreach ($patients as $p): ?>
         <option value="<?= (int)$p['id'] ?>" <?= ((int)$plan['patient_id']===(int)$p['id'])?'selected':'' ?>>
-          <?= h($p['full_name']) ?> (CPF: <?= h($p['cpf']) ?> | SES: <?= h($p['ses']) ?>)
+          <?= h($p['full_name']) ?> (CPF: <?= h($p['cpf']) ?> | Equipe: <?= h($p['team_ref']) ?>)
         </option>
       <?php endforeach; ?>
     </select>

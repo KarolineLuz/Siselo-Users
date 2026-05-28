@@ -84,13 +84,12 @@ require __DIR__ . '/../../app/views/layout/header.php';
 
   <p>
     <b><?= h($patient['full_name']) ?></b><br>
-    CPF: <?= h($patient['cpf']) ?> | SES: <?= h($patient['ses']) ?><br>
+    CPF: <?= h($patient['cpf']) ?> | Equipe: <?= h($patient['team_ref'] ?? '') ?><br>
     <?php if ($ageLabel !== ''): ?>Idade: <?= h($ageLabel) ?> | <?php endif; ?>
     <?php if ($genderLabel !== ''): ?>Genero: <?= h($genderLabel) ?> | <?php endif; ?>
     Status: <?= h($statusLabel) ?><br>
     Tel: <?= h($patient['phone'] ?? '') ?> | Email: <?= h($patient['email'] ?? '') ?><br>
-    Sangue: <?= h($patient['blood_type'] ?? '') ?> | Convenio: <?= h($patient['health_insurance'] ?? '') ?><br>
-    UDS: <?= h($patient['ubs_ref'] ?? '') ?> | Equipe: <?= h($patient['team_ref'] ?? '') ?><br>
+    UDS: <?= h($patient['ubs_ref'] ?? '') ?><br>
     Contato de emergencia: <?= h($patient['emergency_contact'] ?? '') ?>
   </p>
 

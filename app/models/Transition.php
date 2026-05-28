@@ -11,7 +11,7 @@ final class Transition {
 
   public static function list(PDO $pdo, string $query = '', ?int $patientId = null, bool $trash = false): array {
     $sql = '
-      SELECT t.*, p.full_name, p.cpf, p.ses
+      SELECT t.*, p.full_name, p.cpf, p.team_ref
       FROM transitions t
       JOIN patients p ON p.id = t.patient_id
       WHERE t.deleted_at IS ' . ($trash ? 'NOT NULL' : 'NULL') . ' AND p.deleted_at IS NULL
@@ -24,10 +24,10 @@ final class Transition {
     }
 
     if ($query !== '') {
-      $sql .= ' AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.ses LIKE :q_ses OR t.status LIKE :q_status OR t.to_service LIKE :q_to_service OR t.from_service LIKE :q_from_service)';
+      $sql .= ' AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.team_ref LIKE :q_team_ref OR t.status LIKE :q_status OR t.to_service LIKE :q_to_service OR t.from_service LIKE :q_from_service)';
       $params[':q_full_name'] = '%' . $query . '%';
       $params[':q_cpf'] = '%' . $query . '%';
-      $params[':q_ses'] = '%' . $query . '%';
+      $params[':q_team_ref'] = '%' . $query . '%';
       $params[':q_status'] = '%' . $query . '%';
       $params[':q_to_service'] = '%' . $query . '%';
       $params[':q_from_service'] = '%' . $query . '%';

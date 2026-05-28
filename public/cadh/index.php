@@ -24,17 +24,21 @@ function calcular_idade($data) {
 
 $paciente = null;
 
-if (!empty($_GET['ses'])) {
-    $ses = trim($_GET['ses']);
+if (!empty($_GET['q'])) {
+    $q = trim($_GET['q']);
 
     $stmt = $pdo->prepare("
         SELECT * FROM patients 
-        WHERE ses = :ses 
+        WHERE (full_name LIKE :q_name OR cpf LIKE :q_cpf OR team_ref LIKE :q_team_ref)
         AND deleted_at IS NULL 
         LIMIT 1
     ");
 
-    $stmt->execute(['ses' => $ses]);
+    $stmt->execute([
+        'q_name' => '%' . $q . '%',
+        'q_cpf' => '%' . $q . '%',
+        'q_team_ref' => '%' . $q . '%',
+    ]);
     $paciente = $stmt->fetch();
 }
 ?>
@@ -109,8 +113,8 @@ if (!empty($_GET['ses'])) {
   <!-- SIDEBAR -->
   <div class="sidebar">
     <form method="GET">
-      <label>Buscar por SES</label>
-      <input type="text" name="ses" value="<?= h($_GET['ses'] ?? '') ?>" placeholder="Digite o SES">      <button type="submit">Buscar</button>
+      <label>Buscar por nome, CPF ou equipe</label>
+      <input type="text" name="q" value="<?= h($_GET['q'] ?? '') ?>" placeholder="Digite nome, CPF ou equipe">      <button type="submit">Buscar</button>
     </form>
 
     <?php if ($paciente): ?>
@@ -118,12 +122,12 @@ if (!empty($_GET['ses'])) {
         <div><b>Usuário:</b> <?= h($paciente['full_name']) ?></div>
         <div>Idade: <?= calcular_idade($paciente['birth_date'] ?? null) ?></div>
         <div>CPF: <?= h($paciente['cpf']) ?></div>
-        <div>SES: <?= h($paciente['ses']) ?></div>
+        <div>Equipe: <?= h($paciente['team_ref'] ?? '-') ?></div>
         <div>Telefone: <?= h($paciente['phone'] ?? '-') ?></div>
         <div>Email: <?= h($paciente['email'] ?? '-') ?></div>
     </div>
 
-    <?php elseif (!empty($_GET['ses'])): ?>
+    <?php elseif (!empty($_GET['q'])): ?>
         <div class="user-info">
             <div>Usuário não encontrado</div>
         </div>

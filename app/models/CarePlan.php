@@ -6,7 +6,7 @@ require_once __DIR__ . '/../services/Audit.php';
 final class CarePlan {
   public static function list(PDO $pdo, string $query = '', ?int $patientId = null, bool $trash = false): array {
     $sql = '
-      SELECT cp.*, p.full_name, p.cpf, p.ses
+      SELECT cp.*, p.full_name, p.cpf, p.team_ref
       FROM care_plans cp
       JOIN patients p ON p.id = cp.patient_id
       WHERE cp.deleted_at IS ' . ($trash ? 'NOT NULL' : 'NULL') . ' AND p.deleted_at IS NULL
@@ -19,10 +19,10 @@ final class CarePlan {
     }
 
     if ($query !== '') {
-      $sql .= ' AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.ses LIKE :q_ses)';
+      $sql .= ' AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.team_ref LIKE :q_team_ref)';
       $params[':q_full_name'] = '%' . $query . '%';
       $params[':q_cpf'] = '%' . $query . '%';
-      $params[':q_ses'] = '%' . $query . '%';
+      $params[':q_team_ref'] = '%' . $query . '%';
     }
 
     $sql .= $trash ? ' ORDER BY cp.deleted_at DESC LIMIT 300' : ' ORDER BY cp.id DESC LIMIT 200';
@@ -77,7 +77,7 @@ final class CarePlan {
   }
 
   public static function patientOptions(PDO $pdo): array {
-    $stmt = $pdo->query('SELECT id, full_name, cpf, ses FROM patients WHERE deleted_at IS NULL ORDER BY full_name ASC LIMIT 500');
+    $stmt = $pdo->query('SELECT id, full_name, cpf, team_ref FROM patients WHERE deleted_at IS NULL ORDER BY full_name ASC LIMIT 500');
     $rows = $stmt->fetchAll();
 
     return array_map(

@@ -11,17 +11,17 @@ require_permission($pdo, 'transitions.restore'); // admin
 $q = trim((string)($_GET['q'] ?? ''));
 
 $sql = "
-  SELECT t.*, p.full_name, p.cpf, p.ses
+  SELECT t.*, p.full_name, p.cpf, p.team_ref
   FROM transitions t
   JOIN patients p ON p.id = t.patient_id
   WHERE t.deleted_at IS NOT NULL
 ";
 $params = [];
 if ($q !== '') {
-  $sql .= " AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.ses LIKE :q_ses OR t.status LIKE :q_status OR t.to_service LIKE :q_to_service OR t.from_service LIKE :q_from_service)";
+  $sql .= " AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.team_ref LIKE :q_team_ref OR t.status LIKE :q_status OR t.to_service LIKE :q_to_service OR t.from_service LIKE :q_from_service)";
   $params[':q_full_name'] = "%{$q}%";
   $params[':q_cpf'] = "%{$q}%";
-  $params[':q_ses'] = "%{$q}%";
+  $params[':q_team_ref'] = "%{$q}%";
   $params[':q_status'] = "%{$q}%";
   $params[':q_to_service'] = "%{$q}%";
   $params[':q_from_service'] = "%{$q}%";
@@ -43,7 +43,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
   <h1>Lixeira: Transições</h1>
 
   <form method="get">
-    <input name="q" value="<?= h($q) ?>" placeholder="Buscar paciente/CPF/SES/status/serviço">
+    <input name="q" value="<?= h($q) ?>" placeholder="Buscar paciente/CPF/equipe/status/serviço">
     <button type="submit">Buscar</button>
   </form>
 
@@ -60,7 +60,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
       <tr>
         <td><?= h($r['deleted_at']) ?></td>
         <td><?= h($r['transition_date']) ?></td>
-        <td><?= h($r['full_name']) ?><br><small>CPF: <?= h($r['cpf']) ?> | SES: <?= h($r['ses']) ?></small></td>
+        <td><?= h($r['full_name']) ?><br><small>CPF: <?= h($r['cpf']) ?> | Equipe: <?= h($r['team_ref']) ?></small></td>
         <td><?= h($r['from_service']) ?></td>
         <td><?= h($r['to_service']) ?></td>
         <td><?= h($r['status']) ?></td>

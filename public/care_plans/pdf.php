@@ -15,7 +15,7 @@ use Dompdf\Dompdf;
 $id = (int)($_GET['id'] ?? 0);
 
 $st = $pdo->prepare("
-  SELECT cp.*, p.full_name, p.cpf, p.ses, p.birth_date, p.phone, p.ubs_ref, p.team_ref
+  SELECT cp.*, p.full_name, p.cpf, p.birth_date, p.phone, p.ubs_ref, p.team_ref
   FROM care_plans cp
   JOIN patients p ON p.id = cp.patient_id
   WHERE cp.id=:id AND cp.deleted_at IS NULL AND p.deleted_at IS NULL
@@ -69,9 +69,9 @@ $html = '
 <body>
   <div class="title">Plano de Cuidado</div>
   <div class="subtitle">
-    Paciente: <b>'.esc((string)$plan['full_name']).'</b> • CPF: '.esc((string)$plan['cpf']).' • SES: '.esc((string)$plan['ses']).'<br>
+    Paciente: <b>'.esc((string)$plan['full_name']).'</b> • CPF: '.esc((string)$plan['cpf']).' • Equipe: '.esc((string)$plan['team_ref']).'<br>
     Início: <b>'.esc((string)$plan['start_date']).'</b> • Fim: <b>'.esc((string)$plan['end_date']).'</b><br>
-    Tel: '.esc((string)$plan['phone']).' • UBS: '.esc((string)$plan['ubs_ref']).' • Equipe: '.esc((string)$plan['team_ref']).'
+    Tel: '.esc((string)$plan['phone']).' • UBS: '.esc((string)$plan['ubs_ref']).'
   </div>
 
   <div class="box">

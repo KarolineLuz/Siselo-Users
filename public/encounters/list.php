@@ -11,17 +11,17 @@ require_permission($pdo, 'encounters.view');
 $q = trim((string)($_GET['q'] ?? ''));
 
 $sql = "
-  SELECT e.*, p.full_name, p.cpf, p.ses
+  SELECT e.*, p.full_name, p.cpf, p.team_ref
   FROM encounters e
   JOIN patients p ON p.id = e.patient_id
   WHERE e.deleted_at IS NULL AND p.deleted_at IS NULL
 ";
 $params = [];
 if ($q !== '') {
-  $sql .= " AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.ses LIKE :q_ses OR e.specialty LIKE :q_specialty)";
+  $sql .= " AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.team_ref LIKE :q_team_ref OR e.specialty LIKE :q_specialty)";
   $params[':q_full_name'] = "%{$q}%";
   $params[':q_cpf'] = "%{$q}%";
-  $params[':q_ses'] = "%{$q}%";
+  $params[':q_team_ref'] = "%{$q}%";
   $params[':q_specialty'] = "%{$q}%";
 }
 $sql .= " ORDER BY e.encounter_date DESC, e.id DESC LIMIT 300";
@@ -41,7 +41,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
   <h1>Atendimentos</h1>
 
   <form method="get">
-    <input name="q" value="<?= h($q) ?>" placeholder="Buscar paciente/CPF/SES/especialidade">
+    <input name="q" value="<?= h($q) ?>" placeholder="Buscar paciente/CPF/equipe/especialidade">
     <button type="submit">Buscar</button>
   </form>
 
@@ -64,7 +64,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
         <td><?= h($r['encounter_date']) ?></td>
         <td>
           <?= h($r['full_name']) ?><br>
-          <small>CPF: <?= h($r['cpf']) ?> | SES: <?= h($r['ses']) ?></small>
+          <small>CPF: <?= h($r['cpf']) ?> | Equipe: <?= h($r['team_ref']) ?></small>
         </td>
         <td><?= h($r['specialty']) ?></td>
         <td><?= h($r['summary']) ?></td>

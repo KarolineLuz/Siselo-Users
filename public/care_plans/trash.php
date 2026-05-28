@@ -18,10 +18,10 @@ $sql = "
 ";
 $params = [];
 if ($q !== '') {
-  $sql .= " AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.ses LIKE :q_ses)";
+  $sql .= " AND (p.full_name LIKE :q_full_name OR p.cpf LIKE :q_cpf OR p.team_ref LIKE :q_team_ref)";
   $params[':q_full_name'] = "%{$q}%";
   $params[':q_cpf'] = "%{$q}%";
-  $params[':q_ses'] = "%{$q}%";
+  $params[':q_team_ref'] = "%{$q}%";
 }
 $sql .= " ORDER BY cp.deleted_at DESC LIMIT 300";
 
@@ -40,7 +40,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
   <h1>Lixeira: Planos de Cuidado</h1>
 
   <form method="get">
-    <input name="q" value="<?= h($q) ?>" placeholder="Buscar paciente (nome/CPF/SES)">
+    <input name="q" value="<?= h($q) ?>" placeholder="Buscar paciente (nome/CPF/equipe)">
     <button type="submit">Buscar</button>
   </form>
 

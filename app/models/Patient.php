@@ -22,17 +22,22 @@ final class Patient {
     'nao_informado' => 'Nao informado',
   ];
 
-  private const BLOOD_TYPE_OPTIONS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-
   private const STATUS_OPTIONS = [
     'ativo' => 'Ativo',
     'inativo' => 'Inativo',
   ];
 
+  private const TEAM_OPTIONS = [
+    'sem_equipe' => 'Sem equipe',
+    'safira' => 'Safira',
+    'ametista' => 'Ametista',
+    'esmeralda' => 'Esmeralda',
+    'diamante' => 'Diamante',
+  ];
+
   private const REQUIRED_FIELDS = [
     'first_cadh_date',
     'full_name',
-    'ses',
     'cpf',
     'birth_date',
     'sex',
@@ -42,8 +47,6 @@ final class Patient {
     'address',
     'email',
     'emergency_contact',
-    'health_insurance',
-    'blood_type',
     'allergies',
     'chronic_conditions',
     'ubs_ref',
@@ -53,7 +56,6 @@ final class Patient {
   private const FIELD_LABELS = [
     'first_cadh_date' => 'Data do primeiro atendimento CADH',
     'full_name' => 'Nome completo',
-    'ses' => 'SES',
     'cpf' => 'CPF',
     'birth_date' => 'Data de nascimento',
     'sex' => 'Genero',
@@ -63,18 +65,15 @@ final class Patient {
     'address' => 'Endereco',
     'email' => 'Email',
     'emergency_contact' => 'Contato de emergencia',
-    'health_insurance' => 'Convenio',
-    'blood_type' => 'Tipo sanguineo',
     'allergies' => 'Alergias',
     'chronic_conditions' => 'Condicoes cronicas',
     'status' => 'Status',
     'ubs_ref' => 'UBS de referencia',
-    'team_ref' => 'Equipe de referencia',
+    'team_ref' => 'Equipe',
   ];
 
   private const FIELD_MAX_LENGTHS = [
     'full_name' => 180,
-    'ses' => 9,
     'cpf' => 14,
     'sex' => 20,
     'race' => 40,
@@ -83,8 +82,6 @@ final class Patient {
     'address' => 255,
     'email' => 190,
     'emergency_contact' => 15,
-    'health_insurance' => 160,
-    'blood_type' => 5,
     'status' => 20,
     'ubs_ref' => 120,
     'team_ref' => 120,
@@ -96,8 +93,8 @@ final class Patient {
       'max_date' => self::MAX_DATE,
       'gender_options' => self::GENDER_OPTIONS,
       'race_options' => self::RACE_OPTIONS,
-      'blood_type_options' => self::BLOOD_TYPE_OPTIONS,
       'status_options' => self::STATUS_OPTIONS,
+      'team_options' => self::TEAM_OPTIONS,
     ];
   }
 
@@ -137,8 +134,6 @@ final class Patient {
       'address' => '',
       'email' => '',
       'emergency_contact' => '',
-      'health_insurance' => '',
-      'blood_type' => '',
       'allergies' => '',
       'chronic_conditions' => '',
       'status' => 'ativo',
@@ -169,6 +164,11 @@ final class Patient {
   }
 
   public static function validate(array $payload): array {
+    $teamRef = self::normalizeOptionValue((string)($payload['team_reference'] ?? $payload['team_ref'] ?? ''), self::TEAM_OPTIONS);
+    if ($teamRef === '') {
+      $teamRef = 'sem_equipe';
+    }
+
     $data = [
       'first_cadh_date' => self::normalizeOptional($payload['attendance_date'] ?? $payload['first_cadh_date'] ?? null),
       'full_name' => self::normalizeSingleLine((string)($payload['full_name'] ?? '')),
@@ -182,13 +182,13 @@ final class Patient {
       'address' => self::normalizeSingleLine((string)($payload['address'] ?? '')),
       'email' => trim((string)($payload['email'] ?? $payload['contact_email'] ?? '')),
       'emergency_contact' => trim((string)($payload['emergency_contact'] ?? '')),
-      'health_insurance' => self::normalizeSingleLine((string)($payload['health_insurance'] ?? $payload['insurance_name'] ?? '')),
-      'blood_type' => trim((string)($payload['blood_type'] ?? '')),
+      'health_insurance' => '',
+      'blood_type' => '',
       'allergies' => trim((string)($payload['allergies'] ?? '')),
       'chronic_conditions' => trim((string)($payload['chronic_conditions'] ?? '')),
       'status' => self::normalizeOptionValue((string)($payload['status'] ?? 'ativo'), self::STATUS_OPTIONS),
       'ubs_ref' => self::normalizeSingleLine((string)($payload['uds_reference'] ?? $payload['ubs_ref'] ?? '')),
-      'team_ref' => self::normalizeSingleLine((string)($payload['team_reference'] ?? $payload['team_ref'] ?? '')),
+      'team_ref' => $teamRef,
     ];
 
     $errors = [];
@@ -209,13 +209,6 @@ final class Patient {
       self::setError($errors, 'birth_date', 'Informe uma data valida.');
     } elseif ($data['birth_date'] !== null && !self::isDateInRange($data['birth_date'])) {
       self::setError($errors, 'birth_date', 'Informe uma data entre 1900 e 2026.');
-    }
-
-    $sesDigits = self::digitsOnly($data['ses']);
-    if ($data['ses'] !== '' && !preg_match('/^\d{9}$/', $sesDigits)) {
-      self::setError($errors, 'ses', 'Numero SES deve conter exatamente 9 digitos.');
-    } elseif ($data['ses'] !== '') {
-      $data['ses'] = $sesDigits;
     }
 
     if ($data['cpf'] !== null) {
@@ -239,12 +232,12 @@ final class Patient {
       self::setError($errors, 'email', 'Informe um email valido.');
     }
 
-    if ($data['blood_type'] !== '' && !in_array($data['blood_type'], self::BLOOD_TYPE_OPTIONS, true)) {
-      self::setError($errors, 'blood_type', 'Selecione um tipo sanguineo valido.');
-    }
-
     if ($data['status'] !== '' && !array_key_exists($data['status'], self::STATUS_OPTIONS)) {
       self::setError($errors, 'status', 'Selecione um status valido.');
+    }
+
+    if ($data['team_ref'] !== '' && !array_key_exists($data['team_ref'], self::TEAM_OPTIONS)) {
+      self::setError($errors, 'team_ref', 'Selecione uma equipe valida.');
     }
 
     $phoneDigits = self::digitsOnly($data['phone']);
@@ -464,15 +457,15 @@ final class Patient {
 
     if ($query !== '') {
       if ($deleted) {
-        $sql .= ' AND (full_name LIKE :q_full_name OR cpf LIKE :q_cpf OR ses LIKE :q_ses)';
+        $sql .= ' AND (full_name LIKE :q_full_name OR cpf LIKE :q_cpf OR team_ref LIKE :q_team_ref)';
         $params[':q_full_name'] = '%' . $query . '%';
         $params[':q_cpf'] = '%' . $query . '%';
-        $params[':q_ses'] = '%' . $query . '%';
+        $params[':q_team_ref'] = '%' . $query . '%';
       } else {
-        $sql .= ' AND (full_name LIKE :q_name OR cpf LIKE :q_cpf OR ses LIKE :q_ses OR phone LIKE :q_phone OR email LIKE :q_email)';
+        $sql .= ' AND (full_name LIKE :q_name OR cpf LIKE :q_cpf OR team_ref LIKE :q_team_ref OR phone LIKE :q_phone OR email LIKE :q_email)';
         $params[':q_name'] = '%' . $query . '%';
         $params[':q_cpf'] = '%' . $query . '%';
-        $params[':q_ses'] = '%' . $query . '%';
+        $params[':q_team_ref'] = '%' . $query . '%';
         $params[':q_phone'] = '%' . $query . '%';
         $params[':q_email'] = '%' . $query . '%';
       }
@@ -509,6 +502,7 @@ final class Patient {
     $row['age_label'] = $ageLabel;
     $row['gender_label'] = self::GENDER_OPTIONS[$genderKey] ?? '';
     $row['status_label'] = self::STATUS_OPTIONS[$statusKey] ?? 'Ativo';
+    unset($row['health_insurance'], $row['blood_type']);
 
     return $row;
   }
@@ -549,13 +543,46 @@ final class Patient {
   }
 
   private static function normalizeOptionValue(string $value, array $options): string {
+    $normalizedValue = self::normalizeOptionComparable($value);
+    $aliases = [
+      'amarelo' => 'amarela',
+    ];
+
+    if (isset($aliases[$normalizedValue])) {
+      return $aliases[$normalizedValue];
+    }
+
     foreach ($options as $optionValue => $label) {
-      if (strcasecmp(trim($value), (string)$optionValue) === 0 || strcasecmp(trim($value), (string)$label) === 0) {
+      if (
+        $normalizedValue === self::normalizeOptionComparable((string)$optionValue) ||
+        $normalizedValue === self::normalizeOptionComparable((string)$label)
+      ) {
         return (string)$optionValue;
       }
     }
 
     return trim($value);
+  }
+
+  private static function normalizeOptionComparable(string $value): string {
+    $normalized = strtolower(trim($value));
+    $normalized = preg_replace('/^equipe\s*:\s*/i', '', $normalized) ?? $normalized;
+    $normalized = strtr($normalized, [
+      'á' => 'a',
+      'à' => 'a',
+      'ã' => 'a',
+      'â' => 'a',
+      'é' => 'e',
+      'ê' => 'e',
+      'í' => 'i',
+      'ó' => 'o',
+      'ô' => 'o',
+      'õ' => 'o',
+      'ú' => 'u',
+      'ç' => 'c',
+    ]);
+    $normalized = preg_replace('/[^a-z0-9]+/', ' ', $normalized) ?? $normalized;
+    return trim($normalized);
   }
 
   private static function digitsOnly(?string $value): string {

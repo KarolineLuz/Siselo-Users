@@ -13,10 +13,10 @@ $q = trim((string)($_GET['q'] ?? ''));
 $sql = "SELECT * FROM patients WHERE deleted_at IS NOT NULL";
 $params = [];
 if ($q !== '') {
-  $sql .= " AND (full_name LIKE :q_full_name OR cpf LIKE :q_cpf OR ses LIKE :q_ses)";
+  $sql .= " AND (full_name LIKE :q_full_name OR cpf LIKE :q_cpf OR team_ref LIKE :q_team_ref)";
   $params[':q_full_name'] = "%{$q}%";
   $params[':q_cpf'] = "%{$q}%";
-  $params[':q_ses'] = "%{$q}%";
+  $params[':q_team_ref'] = "%{$q}%";
 }
 $sql .= " ORDER BY deleted_at DESC LIMIT 300";
 
@@ -31,7 +31,7 @@ $rows = $st->fetchAll();
   <h1>Lixeira: Pacientes</h1>
 
   <form method="get">
-    <input name="q" value="<?= h($q) ?>" placeholder="Buscar por nome/CPF/SES">
+    <input name="q" value="<?= h($q) ?>" placeholder="Buscar por nome/CPF/equipe">
     <button type="submit">Buscar</button>
   </form>
 
@@ -42,13 +42,13 @@ $rows = $st->fetchAll();
 
   <table border="1" cellpadding="6">
     <tr>
-      <th>Nome</th><th>CPF</th><th>SES</th><th>Apagado em</th><th>Ações</th>
+      <th>Nome</th><th>CPF</th><th>Equipe</th><th>Apagado em</th><th>Ações</th>
     </tr>
     <?php foreach ($rows as $r): ?>
       <tr>
         <td><?= h($r['full_name']) ?></td>
         <td><?= h($r['cpf']) ?></td>
-        <td><?= h($r['ses']) ?></td>
+        <td><?= h($r['team_ref']) ?></td>
         <td><?= h($r['deleted_at']) ?></td>
         <td>
           <form method="post" action="/patients/restore.php" style="display:inline">

@@ -33,11 +33,11 @@ $sql = 'SELECT * FROM patients WHERE deleted_at IS NULL';
 $params = [];
 
 if ($q !== '') {
-  $sql .= ' AND (full_name LIKE :q_name OR cpf LIKE :q_cpf OR ses LIKE :q_ses OR phone LIKE :q_phone OR email LIKE :q_email)';
+  $sql .= ' AND (full_name LIKE :q_name OR cpf LIKE :q_cpf OR team_ref LIKE :q_team_ref OR phone LIKE :q_phone OR email LIKE :q_email)';
   $searchTerm = "%{$q}%";
   $params['q_name'] = $searchTerm;
   $params['q_cpf'] = $searchTerm;
-  $params['q_ses'] = $searchTerm;
+  $params['q_team_ref'] = $searchTerm;
   $params['q_phone'] = $searchTerm;
   $params['q_email'] = $searchTerm;
 }
@@ -58,7 +58,7 @@ require __DIR__ . '/../../app/views/layout/header.php';
   <h1>Usuários</h1>
 
   <form method="get">
-    <input name="q" value="<?= h($q) ?>" placeholder="Buscar por nome/CPF/SES/telefone/email">
+    <input name="q" value="<?= h($q) ?>" placeholder="Buscar por nome/CPF/equipe/telefone/email">
     <button type="submit">Buscar</button>
   </form>
 
@@ -76,9 +76,8 @@ require __DIR__ . '/../../app/views/layout/header.php';
     <tr>
       <th>Usuário</th>
       <th>CPF</th>
-      <th>SES</th>
+      <th>Equipe</th>
       <th>Contato</th>
-      <th>Sangue</th>
       <th>Status</th>
       <th>Acoes</th>
     </tr>
@@ -99,12 +98,11 @@ require __DIR__ . '/../../app/views/layout/header.php';
           </small>
         </td>
         <td><?= h($r['cpf']) ?></td>
-        <td><?= h($r['ses']) ?></td>
+        <td><?= h($r['team_ref']) ?></td>
         <td>
           <?= h($r['phone'] ?? '') ?><br>
           <small><?= h($r['email'] ?? '') ?></small>
         </td>
-        <td><?= h($r['blood_type'] ?? '') ?></td>
         <td><?= h($statusLabel) ?></td>
         <td>
           <a href="/patients/show.php?id=<?= (int)$r['id'] ?>">Usuário 360</a>
