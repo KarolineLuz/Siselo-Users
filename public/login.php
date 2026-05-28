@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../app/core/bootstrap.php';
+require_once __DIR__ . '/../app/models/User.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   csrf_verify();
@@ -12,17 +13,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $stmt->execute([':email' => $email]);
   $user = $stmt->fetch();
 
-  if ($user && (int)$user['is_active'] === 1 && password_verify($pass, $user['password_hash'])) {
-    session_regenerate_id(true);
-    $_SESSION['user_id'] = (int)$user['id'];
+  if ($user && password_verify($pass, $user['password_hash'])) {
+    $accessBlockMessage = User::accessBlockMessage($user);
 
-    require __DIR__ . '/../app/services/Audit.php';
-    Audit::log($pdo, (int)$user['id'], 'login', 'users', (int)$user['id'], null, ['email' => $email]);
+    if ($accessBlockMessage === null) {
+      session_regenerate_id(true);
+      $_SESSION['user_id'] = (int)$user['id'];
 
-    redirect('/index.php');
+      require __DIR__ . '/../app/services/Audit.php';
+      Audit::log($pdo, (int)$user['id'], 'login', 'users', (int)$user['id'], null, ['email' => $email]);
+
+      redirect('/index.php');
+    }
+
+    $error = $accessBlockMessage;
   }
 
-  $error = "Login inválido.";
+  if (empty($error)) {
+    $error = "Login inv&aacute;lido.";
+  }
 }
 ?>
 <style>
@@ -67,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </form>
   </div>
   <p class="muted" style="text-align:center; margin:12px 0 30px 0;">
-    <?= date('Y') ?> • Intranet CADH
+    <?= date('Y') ?> â€¢ Intranet CADH
   </p>
 </div>
 </body>

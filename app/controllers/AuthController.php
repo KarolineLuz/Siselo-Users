@@ -15,8 +15,13 @@ final class AuthController {
     }
 
     $user = User::findByEmail($pdo, $email);
-    if ($user === null || (int)$user['is_active'] !== 1 || !password_verify($password, (string)$user['password_hash'])) {
+    if ($user === null || !password_verify($password, (string)$user['password_hash'])) {
       api_error('Login invalido.', 401);
+    }
+
+    $accessBlockMessage = User::accessBlockMessage($user);
+    if ($accessBlockMessage !== null) {
+      api_error($accessBlockMessage, 403);
     }
 
     session_regenerate_id(true);
@@ -34,22 +39,14 @@ final class AuthController {
     $input = api_request_input();
 
     try {
-      $user = User::registerPublic($pdo, $input);
+      User::registerPublic($pdo, $input);
     } catch (Throwable $error) {
       api_error($error->getMessage(), 422);
     }
 
-    session_regenerate_id(true);
-    $_SESSION['user_id'] = (int)$user['id'];
-
-    Audit::log($pdo, (int)$user['id'], 'login', 'users', (int)$user['id'], null, [
-      'email' => (string)$user['email'],
-      'after_register' => true,
-    ]);
-
     api_success([
-      'user' => User::apiPayload($pdo, $user),
-      'csrf' => csrf_token(),
+      'message' => 'Cadastro recebido com sucesso. Aguarde a aprovacao do administrador para acessar o sistema.',
+      'requires_approval' => true,
     ], 201);
   }
 

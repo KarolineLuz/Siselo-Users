@@ -22,6 +22,18 @@ function user_permissions(PDO $pdo, int $userId): array {
 function can(PDO $pdo, string $permission): bool {
   $uid = current_user_id();
   if (!$uid) return false;
+  static $statusCache = [];
+  if (!array_key_exists($uid, $statusCache)) {
+    $statusStmt = $pdo->prepare('SELECT is_active, is_approved FROM users WHERE id = :id AND deleted_at IS NULL LIMIT 1');
+    $statusStmt->execute([':id' => $uid]);
+    $statusUser = $statusStmt->fetch();
+    $statusCache[$uid] = $statusUser
+      && (int)($statusUser['is_active'] ?? 0) === 1
+      && (int)($statusUser['is_approved'] ?? 1) === 1;
+  }
+  if ($statusCache[$uid] !== true) {
+    return false;
+  }
   $perms = user_permissions($pdo, $uid);
   return isset($perms[$permission]) || isset($perms['admin.manage']); // admin.manage como “superpoder” opcional
 }
